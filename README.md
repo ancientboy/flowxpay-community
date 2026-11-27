@@ -1,4 +1,6 @@
-# FlowXPay 社区版 · 海外四方支付系统
+# FlowXPay 社区版 · 面向多个国家的海外四方支付系统
+
+**简体中文** · [English](README.en.md)
 
 [快速开始](#快速开始) · [一分钟沙盒演示](https://github.com/ancientboy/flowxpay-community/releases/tag/v0.1.0) · [API 文档](docs/merchant-api.md) · [上游适配](docs/channel-integrations.md) · [提交反馈](https://github.com/ancientboy/flowxpay-community/issues) · [Telegram 商务 @FlowXPay_nova](https://t.me/FlowXPay_nova)
 
@@ -13,8 +15,6 @@ FlowXPay 是一套面向多国家和地区的开源海外四方支付系统，�
 | 印度 | INR | 模拟支付网关 |
 
 三个市场均使用模拟交易。**一分钟演示以巴西 Pix 为例**。本地启动后，可在创建代收订单时切换支付方式，体验美国和印度的模拟流程。
-
-**FlowXPay Community Edition** is a self-hosted, open-source cross-border payment orchestration platform. Its multi-market sandbox includes Brazil Pix (BRL), US card checkout (USD), and an India gateway (INR). The video walkthrough uses Pix. For live integrations, bring your own payment provider account and [contact us on Telegram](https://t.me/FlowXPay_nova) for adapter support.
 
 ## 快速开始
 

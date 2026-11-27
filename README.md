@@ -1,8 +1,12 @@
-# FlowXPay Community Edition
+# FlowXPay 社区版 · 海外四方支付系统
 
-[快速开始](#快速开始) · [API 文档](docs/merchant-api.md) · [上游适配](docs/channel-integrations.md) · [提交反馈](https://github.com/ancientboy/flowxpay-community/issues) · [联系商务](https://t.me/megancepay)
+[快速开始](#快速开始) · [API 文档](docs/merchant-api.md) · [上游适配](docs/channel-integrations.md) · [提交反馈](https://github.com/ancientboy/flowxpay-community/issues) · [Telegram 商务 @FlowXPay_nova](https://t.me/FlowXPay_nova)
 
-FlowXPay 社区版是面向开发者的自部署支付编排沙盒。你可以用模拟通道体验商户开户、权限管理、创建订单、收银台、查单、退款和对账。所有交易和余额都是模拟数据。
+FlowXPay 是一套开源、可自部署的海外四方支付系统，面向跨境支付服务商、聚合支付团队和商户技术团队。平台统一管理商户、API、通道路由、收银台、查单、退款和对账。
+
+社区版内置模拟代收和代付工作流，可在本地验证订单流程。全部交易和余额使用模拟数据。接入真实上游时，客户使用自己的上游账号，由我们按需协助适配和联调。
+
+**FlowXPay Community Edition** is an open-source, self-hosted cross-border payment orchestration platform. Its sandbox lets teams test merchant onboarding, payment APIs, checkout, webhooks, and reconciliation with simulated transactions. For help integrating your own payment provider, contact [@FlowXPay_nova on Telegram](https://t.me/FlowXPay_nova).
 
 ## 快速开始
 
@@ -26,7 +30,7 @@ npm --prefix web ci
 
 [商户 API 指南](docs/merchant-api.md) · [OpenAPI](docs/openapi.yaml) · [上游适配指南](docs/channel-integrations.md)
 
-当前内置模拟 USD 卡支付、BRL Pix 和 INR 网关。客户对接真实通道时使用自己的上游账号。各上游的签名、回调与账单格式需要分别验证。需要接入新上游、部署支持或其他合作，请[联系商务](https://t.me/megancepay)。
+当前内置模拟 USD 卡支付、BRL Pix 和 INR 网关。客户对接真实通道时使用自己的上游账号。各上游的签名、回调与账单格式需要分别验证。需要接入新上游、部署支持或其他合作，请[联系商务](https://t.me/FlowXPay_nova)。
 
 ## 验证与反馈
 

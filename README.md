@@ -2,11 +2,19 @@
 
 [快速开始](#快速开始) · [一分钟演示](https://github.com/ancientboy/flowxpay-community/releases/tag/v0.1.0) · [API 文档](docs/merchant-api.md) · [上游适配](docs/channel-integrations.md) · [提交反馈](https://github.com/ancientboy/flowxpay-community/issues) · [Telegram 商务 @FlowXPay_nova](https://t.me/FlowXPay_nova)
 
-FlowXPay 是一套开源、可自部署的海外四方支付系统，面向跨境支付服务商、聚合支付团队和商户技术团队。平台统一管理商户、API、通道路由、收银台、查单、退款和对账。
+FlowXPay 是一套面向多国家和地区的开源海外四方支付系统，可部署在自己的环境中。它用统一的商户 API 和运营后台管理代收、代付、通道路由、查单、退款和对账，方便跨境支付团队接入和管理自己的上游。
 
-社区版内置模拟代收和代付工作流，可在本地验证订单流程。全部交易和余额使用模拟数据。接入真实上游时，客户使用自己的上游账号，由我们按需协助适配和联调。
+## 社区版内置三个模拟市场
 
-**FlowXPay Community Edition** is an open-source, self-hosted cross-border payment orchestration platform. Its sandbox lets teams test merchant onboarding, payment APIs, checkout, webhooks, and reconciliation with simulated transactions. For help integrating your own payment provider, contact [@FlowXPay_nova on Telegram](https://t.me/FlowXPay_nova).
+| 市场 | 币种 | 沙盒支付方式 |
+| --- | --- | --- |
+| 巴西 | BRL | Pix 二维码 |
+| 美国 | USD | 银行卡模拟收银台 |
+| 印度 | INR | 模拟支付网关 |
+
+三个市场均使用模拟交易。**一分钟演示以巴西 Pix 为例**。本地启动后，可在创建代收订单时切换支付方式，体验美国和印度的模拟流程。
+
+**FlowXPay Community Edition** is a self-hosted, open-source cross-border payment orchestration platform. Its multi-market sandbox includes Brazil Pix (BRL), US card checkout (USD), and an India gateway (INR). The video walkthrough uses Pix. For live integrations, bring your own payment provider account and [contact us on Telegram](https://t.me/FlowXPay_nova) for adapter support.
 
 ## 快速开始
 
@@ -30,7 +38,7 @@ npm --prefix web ci
 
 [商户 API 指南](docs/merchant-api.md) · [OpenAPI](docs/openapi.yaml) · [上游适配指南](docs/channel-integrations.md)
 
-当前内置模拟 USD 卡支付、BRL Pix 和 INR 网关。客户对接真实通道时使用自己的上游账号。各上游的签名、回调与账单格式需要分别验证。需要接入新上游、部署支持或其他合作，请[联系商务](https://t.me/FlowXPay_nova)。
+真实通道使用客户自己的上游账号。各家上游的签名、回调与账单协议需要分别适配和验证。需要接入新上游、部署支持或其他合作，请[联系商务](https://t.me/FlowXPay_nova)。
 
 ## 验证与反馈
 

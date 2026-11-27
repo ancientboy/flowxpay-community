@@ -10,7 +10,7 @@ import { LanguageSelect, useLocale } from "./locale";
 import { Details, LoadState, useWorkspaceData, WorkspaceTable } from "./WorkspaceInventoryUI";
 
 import { SiteCards, SiteExplanation, type SiteCard } from "./SiteCards";
-import { PlatformChannelCards } from "./PlatformChannelCards";
+import { ChannelMarketPreviews, PlatformChannelCards } from "./PlatformChannelCards";
 import { MerchantOnboarding, PlatformMerchantCards, PlatformMerchants, type PlatformMerchant } from "./PlatformMerchants";
 import { OrderRiskOverview } from "./DispatchControls";
 import { PlatformFinance } from "./PlatformFinance";
@@ -194,7 +194,10 @@ function PlatformConsole({ logo, session, signOut }: {
         : page === "Merchants"
         ? <PlatformMerchants session={session} signOut={signOut} configure={configure} />
         : page === "Upstream channels"
-          ? <PlatformOperations session={session} merchant="" catalogOnly />
+          ? <>
+            <PlatformOperations session={session} merchant="" catalogOnly />
+            <ChannelMarketPreviews />
+          </>
           : <PlatformReports key={page + ":" + merchant} session={session} page={page} merchant={merchant}
           selectMerchant={(id, differences = false) => { setTarget(undefined); setFocusDifferences(differences); setMerchant(id); }} configure={configure}
           orderTarget={orderTarget} openOrders={next => {

@@ -5,6 +5,39 @@ import { useLocale } from "./locale";
 const marketNames: Record<string, string> = { BR: "Brazil", IN: "India", US: "United States", TH: "Thailand" };
 const methodNames: Record<string, string> = { card: "Card", gateway: "Gateway", pix: "Pix", promptpay: "PromptPay", bank_transfer: "Bank transfer" };
 
+const marketsRequiringIntegration = [
+  { country: "Thailand", currency: "THB" },
+  { country: "Indonesia", currency: "IDR" },
+  { country: "Philippines", currency: "PHP" },
+  { country: "Mexico", currency: "MXN" },
+];
+
+export function ChannelMarketPreviews() {
+  const { t } = useLocale();
+  return <section className="workspace-panel channel-market-previews" aria-labelledby="channel-market-previews">
+    <div className="heading panel-heading">
+      <h2 id="channel-market-previews">{t("Markets requiring integration")}</h2>
+    </div>
+    <p className="muted panel-note">
+      {t("These cards are for reference. Live payments require a technical integration with your upstream provider.")}{" "}
+      <a href="https://t.me/FlowXPay_nova" target="_blank" rel="noreferrer">{t("Contact us on Telegram")}</a>
+    </p>
+    <div className="platform-channel-groups">
+      <ul className="platform-card-grid" role="list">
+        {marketsRequiringIntegration.map(({ country, currency }) => <li className="platform-card" key={currency}>
+          <div className="platform-card-heading">
+            <div className="platform-card-identity">
+              <h3>{t(country)}</h3>
+              <p className="muted small">{currency}</p>
+            </div>
+            <span className="tag gray">{t("Integration required")}</span>
+          </div>
+        </li>)}
+      </ul>
+    </div>
+  </section>;
+}
+
 interface ChannelCardEntry extends ChannelIdentity {
   enabled: boolean;
   permitted?: boolean;

@@ -444,6 +444,7 @@ dialog:has(> .payment-detail) { padding-top: 0; }
   gap: 12px; margin: 0; padding: 0; list-style: none;
 }
 .platform-merchant-cards, .platform-channel-groups { padding: 0 16px 16px; }
+.workspace > .workspace-panel.channel-market-previews { margin-top: 16px; }
 .platform-channel-group + .platform-channel-group { margin-top: 18px; }
 .platform-channel-group > h3 { margin: 0 0 9px; font-size: .94rem; font-weight: 680; }
 .platform-card {

@@ -1,4 +1,6 @@
 export const messages: Record<string, string> = {
+  "The online demo is read-only. Start the local sandbox to make changes.": "在线演示为只读。请启动本地沙盒以执行修改。",
+  "This data is unavailable in the online demo.": "在线演示暂未提供此项数据。",
   "Release for payout after upstream receipt":"上游实际到账后开放代付",
   "Awaiting upstream receipt":"待上游到账",
   "Dispute hold":"争议冻结",

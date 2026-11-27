@@ -64,6 +64,8 @@ services:
     # Nginx is the only ingress. The API still listens on loopback.
     network_mode: service:web
     restart: unless-stopped
+    environment:
+      - FLOWXPAY_LOCAL_PLATFORM_ACCOUNTS
     security_opt:
       - no-new-privileges:true
     volumes:

@@ -148,7 +148,7 @@ export function APIKeys({ token, environment }: { token: string; environment: "P
         [t("Created"), auditEntry(dateTime, selected.created_by, selected.created_at)], [t("Replaces"), selected.replaces_id ?? "—"],
         [t("Retired"), auditEntry(dateTime, selected.revoked_by, selected.revoked_at)],
       ]} />
-      {!selected.platform && !selected.revoked_at && <div className="detail-actions">
+      {import.meta.env.MODE !== "community-demo" && !selected.platform && !selected.revoked_at && <div className="detail-actions">
         <button className="secondary" type="button" onClick={() => setAction("rotate")}>{t("Rotate key")}</button>
         <button className="secondary danger" type="button" onClick={() => setAction("revoke")}>{t("Revoke key")}</button>
       </div>}

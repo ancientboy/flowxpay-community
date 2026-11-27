@@ -85,6 +85,9 @@ const productionErrors: Record<string, string> = {
 };
 
 export async function request<T>(path: string, key?: string, init: RequestInit = {}): Promise<T> {
+  if (import.meta.env.MODE === "community-demo") {
+    return (await import("./demo/data")).readDemo<T>(path, init);
+  }
   const headers = new Headers(init.headers);
   if (key) headers.set("Authorization", `Bearer ${key}`);
   if (init.body) headers.set("Content-Type", "application/json");

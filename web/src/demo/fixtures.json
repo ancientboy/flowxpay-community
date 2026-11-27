@@ -1,0 +1,1934 @@
+{
+  "/sandbox/ops/dashboard": {
+    "channels": [
+      {
+        "id": "default_M10028_mock_card",
+        "merchant": "M10028",
+        "merchant_name": "Cedar Commerce",
+        "site_name": "Default sandbox site",
+        "platform_channel_id": "channel_builtin_card",
+        "platform_channel_name": "Mock Card",
+        "provider": "mock_card",
+        "enabled": true
+      },
+      {
+        "id": "default_M10028_mock_in_redirect",
+        "merchant": "M10028",
+        "merchant_name": "Cedar Commerce",
+        "site_name": "Default sandbox site",
+        "platform_channel_id": "channel_builtin_india",
+        "platform_channel_name": "Mock India redirect",
+        "provider": "mock_in_redirect",
+        "enabled": true
+      },
+      {
+        "id": "default_M10028_mock_pix",
+        "merchant": "M10028",
+        "merchant_name": "Cedar Commerce",
+        "site_name": "Default sandbox site",
+        "platform_channel_id": "channel_builtin_pix",
+        "platform_channel_name": "Mock Pix",
+        "provider": "mock_pix",
+        "enabled": true
+      },
+      {
+        "id": "default_M20029_mock_card",
+        "merchant": "M20029",
+        "merchant_name": "Harbor Retail",
+        "site_name": "Default sandbox site",
+        "platform_channel_id": "channel_builtin_card",
+        "platform_channel_name": "Mock Card",
+        "provider": "mock_card",
+        "enabled": true
+      },
+      {
+        "id": "default_M20029_mock_in_redirect",
+        "merchant": "M20029",
+        "merchant_name": "Harbor Retail",
+        "site_name": "Default sandbox site",
+        "platform_channel_id": "channel_builtin_india",
+        "platform_channel_name": "Mock India redirect",
+        "provider": "mock_in_redirect",
+        "enabled": true
+      },
+      {
+        "id": "default_M20029_mock_pix",
+        "merchant": "M20029",
+        "merchant_name": "Harbor Retail",
+        "site_name": "Default sandbox site",
+        "platform_channel_id": "channel_builtin_pix",
+        "platform_channel_name": "Mock Pix",
+        "provider": "mock_pix",
+        "enabled": true
+      }
+    ],
+    "merchants": [
+      {
+        "id": "M10028",
+        "name": "Cedar Commerce",
+        "sites": 1,
+        "accounts": 3
+      },
+      {
+        "id": "M20029",
+        "name": "Harbor Retail",
+        "sites": 1,
+        "accounts": 3
+      }
+    ],
+    "payments": [
+      {
+        "id": "pay_RUV5J8FV6SVLE6T6D47RPNS5",
+        "merchant": "M10028",
+        "reference": "MP-104239",
+        "currency": "USD",
+        "amount_minor": 24900,
+        "status": "succeeded",
+        "created_at": "2026-11-27T20:05:53.483806+08:00",
+        "market": "US",
+        "method": "card",
+        "account_id": "default_M10028_mock_card"
+      },
+      {
+        "id": "pay_6PUHL7QPZ9LX4Q9B62NS5ZNB",
+        "merchant": "M10028",
+        "reference": "MP-104238",
+        "currency": "BRL",
+        "amount_minor": 129000,
+        "status": "requires_action",
+        "created_at": "2026-11-27T20:05:53.480376+08:00",
+        "market": "BR",
+        "method": "pix",
+        "account_id": "default_M10028_mock_pix"
+      },
+      {
+        "id": "pay_CBYVKUWXH729G8RVKUEE7RPB",
+        "merchant": "M10028",
+        "reference": "MP-104236",
+        "currency": "USD",
+        "amount_minor": 7900,
+        "status": "succeeded",
+        "created_at": "2026-11-27T20:05:53.469055+08:00",
+        "market": "US",
+        "method": "card",
+        "account_id": "default_M10028_mock_card"
+      }
+    ],
+    "volumes": [
+      {
+        "currency": "BRL",
+        "orders": 1,
+        "paid": 0,
+        "volume_minor": "0"
+      },
+      {
+        "currency": "USD",
+        "orders": 2,
+        "paid": 2,
+        "volume_minor": "32800"
+      }
+    ]
+  },
+  "/sandbox/ops/dashboard?tasks=1": {
+    "channels": [
+      {
+        "id": "default_M10028_mock_card",
+        "merchant": "M10028",
+        "merchant_name": "Cedar Commerce",
+        "site_name": "Default sandbox site",
+        "platform_channel_id": "channel_builtin_card",
+        "platform_channel_name": "Mock Card",
+        "provider": "mock_card",
+        "enabled": true
+      },
+      {
+        "id": "default_M10028_mock_in_redirect",
+        "merchant": "M10028",
+        "merchant_name": "Cedar Commerce",
+        "site_name": "Default sandbox site",
+        "platform_channel_id": "channel_builtin_india",
+        "platform_channel_name": "Mock India redirect",
+        "provider": "mock_in_redirect",
+        "enabled": true
+      },
+      {
+        "id": "default_M10028_mock_pix",
+        "merchant": "M10028",
+        "merchant_name": "Cedar Commerce",
+        "site_name": "Default sandbox site",
+        "platform_channel_id": "channel_builtin_pix",
+        "platform_channel_name": "Mock Pix",
+        "provider": "mock_pix",
+        "enabled": true
+      },
+      {
+        "id": "default_M20029_mock_card",
+        "merchant": "M20029",
+        "merchant_name": "Harbor Retail",
+        "site_name": "Default sandbox site",
+        "platform_channel_id": "channel_builtin_card",
+        "platform_channel_name": "Mock Card",
+        "provider": "mock_card",
+        "enabled": true
+      },
+      {
+        "id": "default_M20029_mock_in_redirect",
+        "merchant": "M20029",
+        "merchant_name": "Harbor Retail",
+        "site_name": "Default sandbox site",
+        "platform_channel_id": "channel_builtin_india",
+        "platform_channel_name": "Mock India redirect",
+        "provider": "mock_in_redirect",
+        "enabled": true
+      },
+      {
+        "id": "default_M20029_mock_pix",
+        "merchant": "M20029",
+        "merchant_name": "Harbor Retail",
+        "site_name": "Default sandbox site",
+        "platform_channel_id": "channel_builtin_pix",
+        "platform_channel_name": "Mock Pix",
+        "provider": "mock_pix",
+        "enabled": true
+      }
+    ],
+    "merchants": [
+      {
+        "id": "M10028",
+        "name": "Cedar Commerce",
+        "sites": 1,
+        "accounts": 3
+      },
+      {
+        "id": "M20029",
+        "name": "Harbor Retail",
+        "sites": 1,
+        "accounts": 3
+      }
+    ],
+    "payments": [
+      {
+        "id": "pay_RUV5J8FV6SVLE6T6D47RPNS5",
+        "merchant": "M10028",
+        "reference": "MP-104239",
+        "currency": "USD",
+        "amount_minor": 24900,
+        "status": "succeeded",
+        "created_at": "2026-11-27T20:05:53.483806+08:00",
+        "market": "US",
+        "method": "card",
+        "account_id": "default_M10028_mock_card"
+      },
+      {
+        "id": "pay_6PUHL7QPZ9LX4Q9B62NS5ZNB",
+        "merchant": "M10028",
+        "reference": "MP-104238",
+        "currency": "BRL",
+        "amount_minor": 129000,
+        "status": "requires_action",
+        "created_at": "2026-11-27T20:05:53.480376+08:00",
+        "market": "BR",
+        "method": "pix",
+        "account_id": "default_M10028_mock_pix"
+      },
+      {
+        "id": "pay_CBYVKUWXH729G8RVKUEE7RPB",
+        "merchant": "M10028",
+        "reference": "MP-104236",
+        "currency": "USD",
+        "amount_minor": 7900,
+        "status": "succeeded",
+        "created_at": "2026-11-27T20:05:53.469055+08:00",
+        "market": "US",
+        "method": "card",
+        "account_id": "default_M10028_mock_card"
+      }
+    ],
+    "sites": [
+      {
+        "id": "default_M10028",
+        "name": "Default sandbox site",
+        "is_default": true,
+        "business_domain": null,
+        "merchant_id": "M10028",
+        "merchant_name": "Cedar Commerce",
+        "assigned_accounts": 3,
+        "available_accounts": 3,
+        "methods": [
+          {
+            "site_id": "default_M10028",
+            "account_id": "default_M10028_mock_pix",
+            "market": "BR",
+            "currency": "BRL",
+            "method": "pix"
+          },
+          {
+            "site_id": "default_M10028",
+            "account_id": "default_M10028_mock_in_redirect",
+            "market": "IN",
+            "currency": "INR",
+            "method": "gateway"
+          },
+          {
+            "site_id": "default_M10028",
+            "account_id": "default_M10028_mock_card",
+            "market": "US",
+            "currency": "USD",
+            "method": "card"
+          }
+        ],
+        "proposals": []
+      },
+      {
+        "id": "default_M20029",
+        "name": "Default sandbox site",
+        "is_default": true,
+        "business_domain": null,
+        "merchant_id": "M20029",
+        "merchant_name": "Harbor Retail",
+        "assigned_accounts": 3,
+        "available_accounts": 3,
+        "methods": [
+          {
+            "site_id": "default_M20029",
+            "account_id": "default_M20029_mock_pix",
+            "market": "BR",
+            "currency": "BRL",
+            "method": "pix"
+          },
+          {
+            "site_id": "default_M20029",
+            "account_id": "default_M20029_mock_in_redirect",
+            "market": "IN",
+            "currency": "INR",
+            "method": "gateway"
+          },
+          {
+            "site_id": "default_M20029",
+            "account_id": "default_M20029_mock_card",
+            "market": "US",
+            "currency": "USD",
+            "method": "card"
+          }
+        ],
+        "proposals": []
+      }
+    ],
+    "tasks": [],
+    "volumes": [
+      {
+        "currency": "BRL",
+        "orders": 1,
+        "paid": 0,
+        "volume_minor": "0"
+      },
+      {
+        "currency": "USD",
+        "orders": 2,
+        "paid": 2,
+        "volume_minor": "32800"
+      }
+    ]
+  },
+  "/sandbox/ops/dashboard?direction=payout": {
+    "channels": [
+      {
+        "id": "default_M10028_mock_card",
+        "merchant": "M10028",
+        "merchant_name": "Cedar Commerce",
+        "site_name": "Default sandbox site",
+        "platform_channel_id": "channel_builtin_card",
+        "platform_channel_name": "Mock Card",
+        "provider": "mock_card",
+        "enabled": true
+      },
+      {
+        "id": "default_M10028_mock_in_redirect",
+        "merchant": "M10028",
+        "merchant_name": "Cedar Commerce",
+        "site_name": "Default sandbox site",
+        "platform_channel_id": "channel_builtin_india",
+        "platform_channel_name": "Mock India redirect",
+        "provider": "mock_in_redirect",
+        "enabled": true
+      },
+      {
+        "id": "default_M10028_mock_pix",
+        "merchant": "M10028",
+        "merchant_name": "Cedar Commerce",
+        "site_name": "Default sandbox site",
+        "platform_channel_id": "channel_builtin_pix",
+        "platform_channel_name": "Mock Pix",
+        "provider": "mock_pix",
+        "enabled": true
+      },
+      {
+        "id": "default_M20029_mock_card",
+        "merchant": "M20029",
+        "merchant_name": "Harbor Retail",
+        "site_name": "Default sandbox site",
+        "platform_channel_id": "channel_builtin_card",
+        "platform_channel_name": "Mock Card",
+        "provider": "mock_card",
+        "enabled": true
+      },
+      {
+        "id": "default_M20029_mock_in_redirect",
+        "merchant": "M20029",
+        "merchant_name": "Harbor Retail",
+        "site_name": "Default sandbox site",
+        "platform_channel_id": "channel_builtin_india",
+        "platform_channel_name": "Mock India redirect",
+        "provider": "mock_in_redirect",
+        "enabled": true
+      },
+      {
+        "id": "default_M20029_mock_pix",
+        "merchant": "M20029",
+        "merchant_name": "Harbor Retail",
+        "site_name": "Default sandbox site",
+        "platform_channel_id": "channel_builtin_pix",
+        "platform_channel_name": "Mock Pix",
+        "provider": "mock_pix",
+        "enabled": true
+      }
+    ],
+    "merchants": [
+      {
+        "id": "M10028",
+        "name": "Cedar Commerce",
+        "sites": 1,
+        "accounts": 3
+      },
+      {
+        "id": "M20029",
+        "name": "Harbor Retail",
+        "sites": 1,
+        "accounts": 3
+      }
+    ],
+    "payments": [],
+    "volumes": [
+      {
+        "currency": "BRL",
+        "orders": 1,
+        "paid": 0,
+        "volume_minor": "0"
+      },
+      {
+        "currency": "USD",
+        "orders": 2,
+        "paid": 2,
+        "volume_minor": "32800"
+      }
+    ]
+  },
+  "/sandbox/ops/merchants": {
+    "merchants": [
+      {
+        "id": "M10028",
+        "name": "Cedar Commerce",
+        "sites": 1,
+        "accounts": 3
+      },
+      {
+        "id": "M20029",
+        "name": "Harbor Retail",
+        "sites": 1,
+        "accounts": 3
+      }
+    ]
+  },
+  "/sandbox/ops/operations": {
+    "audit": [],
+    "channels": [
+      {
+        "id": "channel_builtin_card",
+        "name": "Mock Card",
+        "provider": "mock_card",
+        "enabled": true,
+        "market": "US",
+        "currency": "USD",
+        "method": "card"
+      },
+      {
+        "id": "channel_builtin_india",
+        "name": "Mock India redirect",
+        "provider": "mock_in_redirect",
+        "enabled": true,
+        "market": "IN",
+        "currency": "INR",
+        "method": "gateway"
+      },
+      {
+        "id": "channel_builtin_pix",
+        "name": "Mock Pix",
+        "provider": "mock_pix",
+        "enabled": true,
+        "market": "BR",
+        "currency": "BRL",
+        "method": "pix"
+      }
+    ],
+    "upstream_integrations": [
+      {
+        "id": "thai-upstream",
+        "name": "Thailand upstream",
+        "market": "TH",
+        "currency": "THB",
+        "collections": true,
+        "payouts": true,
+        "validation_status": "signature_rejected"
+      }
+    ]
+  },
+  "/sandbox/ops/finance": {
+    "from": "2026-11-21",
+    "payouts": [],
+    "settlements": [],
+    "summary": [
+      {
+        "currency": "BRL",
+        "direction": "collection",
+        "orders": 1,
+        "succeeded": 0,
+        "in_progress": 1,
+        "successful_minor": "0"
+      },
+      {
+        "currency": "USD",
+        "direction": "collection",
+        "orders": 2,
+        "succeeded": 2,
+        "in_progress": 0,
+        "successful_minor": "32800"
+      }
+    ],
+    "to": "2026-11-27"
+  },
+  "/sandbox/ops/prices": [],
+  "/sandbox/ops/settlement-requests": [],
+  "/sandbox/ops/dashboard?merchant=M10028": {
+    "channels": [
+      {
+        "id": "default_M10028_mock_card",
+        "merchant": "M10028",
+        "merchant_name": "Cedar Commerce",
+        "site_name": "Default sandbox site",
+        "platform_channel_id": "channel_builtin_card",
+        "platform_channel_name": "Mock Card",
+        "provider": "mock_card",
+        "enabled": true
+      },
+      {
+        "id": "default_M10028_mock_in_redirect",
+        "merchant": "M10028",
+        "merchant_name": "Cedar Commerce",
+        "site_name": "Default sandbox site",
+        "platform_channel_id": "channel_builtin_india",
+        "platform_channel_name": "Mock India redirect",
+        "provider": "mock_in_redirect",
+        "enabled": true
+      },
+      {
+        "id": "default_M10028_mock_pix",
+        "merchant": "M10028",
+        "merchant_name": "Cedar Commerce",
+        "site_name": "Default sandbox site",
+        "platform_channel_id": "channel_builtin_pix",
+        "platform_channel_name": "Mock Pix",
+        "provider": "mock_pix",
+        "enabled": true
+      }
+    ],
+    "merchants": [
+      {
+        "id": "M10028",
+        "name": "Cedar Commerce",
+        "sites": 1,
+        "accounts": 3
+      },
+      {
+        "id": "M20029",
+        "name": "Harbor Retail",
+        "sites": 1,
+        "accounts": 3
+      }
+    ],
+    "payments": [
+      {
+        "id": "pay_RUV5J8FV6SVLE6T6D47RPNS5",
+        "merchant": "M10028",
+        "reference": "MP-104239",
+        "currency": "USD",
+        "amount_minor": 24900,
+        "status": "succeeded",
+        "created_at": "2026-11-27T20:05:53.483806+08:00",
+        "market": "US",
+        "method": "card",
+        "account_id": "default_M10028_mock_card"
+      },
+      {
+        "id": "pay_6PUHL7QPZ9LX4Q9B62NS5ZNB",
+        "merchant": "M10028",
+        "reference": "MP-104238",
+        "currency": "BRL",
+        "amount_minor": 129000,
+        "status": "requires_action",
+        "created_at": "2026-11-27T20:05:53.480376+08:00",
+        "market": "BR",
+        "method": "pix",
+        "account_id": "default_M10028_mock_pix"
+      },
+      {
+        "id": "pay_CBYVKUWXH729G8RVKUEE7RPB",
+        "merchant": "M10028",
+        "reference": "MP-104236",
+        "currency": "USD",
+        "amount_minor": 7900,
+        "status": "succeeded",
+        "created_at": "2026-11-27T20:05:53.469055+08:00",
+        "market": "US",
+        "method": "card",
+        "account_id": "default_M10028_mock_card"
+      }
+    ],
+    "volumes": [
+      {
+        "currency": "BRL",
+        "orders": 1,
+        "paid": 0,
+        "volume_minor": "0"
+      },
+      {
+        "currency": "USD",
+        "orders": 2,
+        "paid": 2,
+        "volume_minor": "32800"
+      }
+    ]
+  },
+  "/sandbox/ops/dashboard?tasks=1&merchant=M10028": {
+    "channels": [
+      {
+        "id": "default_M10028_mock_card",
+        "merchant": "M10028",
+        "merchant_name": "Cedar Commerce",
+        "site_name": "Default sandbox site",
+        "platform_channel_id": "channel_builtin_card",
+        "platform_channel_name": "Mock Card",
+        "provider": "mock_card",
+        "enabled": true
+      },
+      {
+        "id": "default_M10028_mock_in_redirect",
+        "merchant": "M10028",
+        "merchant_name": "Cedar Commerce",
+        "site_name": "Default sandbox site",
+        "platform_channel_id": "channel_builtin_india",
+        "platform_channel_name": "Mock India redirect",
+        "provider": "mock_in_redirect",
+        "enabled": true
+      },
+      {
+        "id": "default_M10028_mock_pix",
+        "merchant": "M10028",
+        "merchant_name": "Cedar Commerce",
+        "site_name": "Default sandbox site",
+        "platform_channel_id": "channel_builtin_pix",
+        "platform_channel_name": "Mock Pix",
+        "provider": "mock_pix",
+        "enabled": true
+      }
+    ],
+    "merchants": [
+      {
+        "id": "M10028",
+        "name": "Cedar Commerce",
+        "sites": 1,
+        "accounts": 3
+      },
+      {
+        "id": "M20029",
+        "name": "Harbor Retail",
+        "sites": 1,
+        "accounts": 3
+      }
+    ],
+    "payments": [
+      {
+        "id": "pay_RUV5J8FV6SVLE6T6D47RPNS5",
+        "merchant": "M10028",
+        "reference": "MP-104239",
+        "currency": "USD",
+        "amount_minor": 24900,
+        "status": "succeeded",
+        "created_at": "2026-11-27T20:05:53.483806+08:00",
+        "market": "US",
+        "method": "card",
+        "account_id": "default_M10028_mock_card"
+      },
+      {
+        "id": "pay_6PUHL7QPZ9LX4Q9B62NS5ZNB",
+        "merchant": "M10028",
+        "reference": "MP-104238",
+        "currency": "BRL",
+        "amount_minor": 129000,
+        "status": "requires_action",
+        "created_at": "2026-11-27T20:05:53.480376+08:00",
+        "market": "BR",
+        "method": "pix",
+        "account_id": "default_M10028_mock_pix"
+      },
+      {
+        "id": "pay_CBYVKUWXH729G8RVKUEE7RPB",
+        "merchant": "M10028",
+        "reference": "MP-104236",
+        "currency": "USD",
+        "amount_minor": 7900,
+        "status": "succeeded",
+        "created_at": "2026-11-27T20:05:53.469055+08:00",
+        "market": "US",
+        "method": "card",
+        "account_id": "default_M10028_mock_card"
+      }
+    ],
+    "sites": [
+      {
+        "id": "default_M10028",
+        "name": "Default sandbox site",
+        "is_default": true,
+        "business_domain": null,
+        "merchant_id": "M10028",
+        "merchant_name": "Cedar Commerce",
+        "assigned_accounts": 3,
+        "available_accounts": 3,
+        "methods": [
+          {
+            "site_id": "default_M10028",
+            "account_id": "default_M10028_mock_pix",
+            "market": "BR",
+            "currency": "BRL",
+            "method": "pix"
+          },
+          {
+            "site_id": "default_M10028",
+            "account_id": "default_M10028_mock_in_redirect",
+            "market": "IN",
+            "currency": "INR",
+            "method": "gateway"
+          },
+          {
+            "site_id": "default_M10028",
+            "account_id": "default_M10028_mock_card",
+            "market": "US",
+            "currency": "USD",
+            "method": "card"
+          }
+        ],
+        "proposals": []
+      }
+    ],
+    "tasks": [],
+    "volumes": [
+      {
+        "currency": "BRL",
+        "orders": 1,
+        "paid": 0,
+        "volume_minor": "0"
+      },
+      {
+        "currency": "USD",
+        "orders": 2,
+        "paid": 2,
+        "volume_minor": "32800"
+      }
+    ]
+  },
+  "/sandbox/ops/dashboard?direction=payout&merchant=M10028": {
+    "channels": [
+      {
+        "id": "default_M10028_mock_card",
+        "merchant": "M10028",
+        "merchant_name": "Cedar Commerce",
+        "site_name": "Default sandbox site",
+        "platform_channel_id": "channel_builtin_card",
+        "platform_channel_name": "Mock Card",
+        "provider": "mock_card",
+        "enabled": true
+      },
+      {
+        "id": "default_M10028_mock_in_redirect",
+        "merchant": "M10028",
+        "merchant_name": "Cedar Commerce",
+        "site_name": "Default sandbox site",
+        "platform_channel_id": "channel_builtin_india",
+        "platform_channel_name": "Mock India redirect",
+        "provider": "mock_in_redirect",
+        "enabled": true
+      },
+      {
+        "id": "default_M10028_mock_pix",
+        "merchant": "M10028",
+        "merchant_name": "Cedar Commerce",
+        "site_name": "Default sandbox site",
+        "platform_channel_id": "channel_builtin_pix",
+        "platform_channel_name": "Mock Pix",
+        "provider": "mock_pix",
+        "enabled": true
+      }
+    ],
+    "merchants": [
+      {
+        "id": "M10028",
+        "name": "Cedar Commerce",
+        "sites": 1,
+        "accounts": 3
+      },
+      {
+        "id": "M20029",
+        "name": "Harbor Retail",
+        "sites": 1,
+        "accounts": 3
+      }
+    ],
+    "payments": [],
+    "volumes": [
+      {
+        "currency": "BRL",
+        "orders": 1,
+        "paid": 0,
+        "volume_minor": "0"
+      },
+      {
+        "currency": "USD",
+        "orders": 2,
+        "paid": 2,
+        "volume_minor": "32800"
+      }
+    ]
+  },
+  "/sandbox/ops/operations?merchant=M10028": {
+    "accounts": [
+      {
+        "id": "default_M10028_mock_card",
+        "site_id": "default_M10028",
+        "provider": "mock_card",
+        "environment": "sandbox",
+        "enabled": true,
+        "platform_channel_id": "channel_builtin_card",
+        "platform_channel_name": "Mock Card",
+        "routing_standby": false
+      },
+      {
+        "id": "default_M10028_mock_in_redirect",
+        "site_id": "default_M10028",
+        "provider": "mock_in_redirect",
+        "environment": "sandbox",
+        "enabled": true,
+        "platform_channel_id": "channel_builtin_india",
+        "platform_channel_name": "Mock India redirect",
+        "routing_standby": false
+      },
+      {
+        "id": "default_M10028_mock_pix",
+        "site_id": "default_M10028",
+        "provider": "mock_pix",
+        "environment": "sandbox",
+        "enabled": true,
+        "platform_channel_id": "channel_builtin_pix",
+        "platform_channel_name": "Mock Pix",
+        "routing_standby": false
+      }
+    ],
+    "audit": [],
+    "channels": [
+      {
+        "id": "channel_builtin_card",
+        "name": "Mock Card",
+        "provider": "mock_card",
+        "enabled": true,
+        "market": "US",
+        "currency": "USD",
+        "method": "card"
+      },
+      {
+        "id": "channel_builtin_india",
+        "name": "Mock India redirect",
+        "provider": "mock_in_redirect",
+        "enabled": true,
+        "market": "IN",
+        "currency": "INR",
+        "method": "gateway"
+      },
+      {
+        "id": "channel_builtin_pix",
+        "name": "Mock Pix",
+        "provider": "mock_pix",
+        "enabled": true,
+        "market": "BR",
+        "currency": "BRL",
+        "method": "pix"
+      }
+    ],
+    "effective_routes": [
+      {
+        "site_id": "default_M10028",
+        "account_id": "default_M10028_mock_pix",
+        "market": "BR",
+        "currency": "BRL",
+        "method": "pix"
+      },
+      {
+        "site_id": "default_M10028",
+        "account_id": "default_M10028_mock_in_redirect",
+        "market": "IN",
+        "currency": "INR",
+        "method": "gateway"
+      },
+      {
+        "site_id": "default_M10028",
+        "account_id": "default_M10028_mock_card",
+        "market": "US",
+        "currency": "USD",
+        "method": "card"
+      }
+    ],
+    "keys": [
+      {
+        "id": "legacy_M10028",
+        "label": "Legacy sandbox key",
+        "legacy": true,
+        "platform": false
+      }
+    ],
+    "merchant_channel_quotes": [
+      {
+        "account_id": "default_M10028_mock_card",
+        "site_id": "default_M10028",
+        "channel_id": "channel_builtin_card",
+        "name": "Mock Card",
+        "provider": "mock_card",
+        "currency": "USD",
+        "direction": "collection",
+        "quote": null
+      },
+      {
+        "account_id": "default_M10028_mock_in_redirect",
+        "site_id": "default_M10028",
+        "channel_id": "channel_builtin_india",
+        "name": "Mock India redirect",
+        "provider": "mock_in_redirect",
+        "currency": "INR",
+        "direction": "collection",
+        "quote": null
+      },
+      {
+        "account_id": "default_M10028_mock_pix",
+        "site_id": "default_M10028",
+        "channel_id": "channel_builtin_pix",
+        "name": "Mock Pix",
+        "provider": "mock_pix",
+        "currency": "BRL",
+        "direction": "collection",
+        "quote": null
+      },
+      {
+        "account_id": "default_M10028_mock_card",
+        "site_id": "default_M10028",
+        "channel_id": "channel_builtin_card",
+        "name": "Mock Card",
+        "provider": "mock_card",
+        "currency": "USD",
+        "direction": "payout",
+        "quote": null
+      },
+      {
+        "account_id": "default_M10028_mock_in_redirect",
+        "site_id": "default_M10028",
+        "channel_id": "channel_builtin_india",
+        "name": "Mock India redirect",
+        "provider": "mock_in_redirect",
+        "currency": "INR",
+        "direction": "payout",
+        "quote": null
+      },
+      {
+        "account_id": "default_M10028_mock_pix",
+        "site_id": "default_M10028",
+        "channel_id": "channel_builtin_pix",
+        "name": "Mock Pix",
+        "provider": "mock_pix",
+        "currency": "BRL",
+        "direction": "payout",
+        "quote": null
+      }
+    ],
+    "routes": [],
+    "sites": [
+      {
+        "id": "default_M10028",
+        "name": "Default sandbox site",
+        "is_default": true,
+        "business_domain": null,
+        "merchant_id": "M10028",
+        "merchant_name": "Cedar Commerce",
+        "assigned_accounts": 3,
+        "available_accounts": 3,
+        "methods": [
+          {
+            "site_id": "default_M10028",
+            "account_id": "default_M10028_mock_pix",
+            "market": "BR",
+            "currency": "BRL",
+            "method": "pix"
+          },
+          {
+            "site_id": "default_M10028",
+            "account_id": "default_M10028_mock_in_redirect",
+            "market": "IN",
+            "currency": "INR",
+            "method": "gateway"
+          },
+          {
+            "site_id": "default_M10028",
+            "account_id": "default_M10028_mock_card",
+            "market": "US",
+            "currency": "USD",
+            "method": "card"
+          }
+        ],
+        "proposals": []
+      }
+    ]
+  },
+  "/sandbox/ops/merchants/M10028/order-fees": [
+    {
+      "id": "pay_RUV5J8FV6SVLE6T6D47RPNS5",
+      "status": "succeeded",
+      "site_id": "default_M10028",
+      "account_id": "default_M10028_mock_card",
+      "direction": "collection",
+      "currency": "USD",
+      "amount_minor": 24900,
+      "created_at": "2026-11-27T12:05:53Z",
+      "channel_id": "channel_builtin_card",
+      "quote": null,
+      "statement_fee_minor": null,
+      "statement_net_minor": null,
+      "statement_status": "missing"
+    },
+    {
+      "id": "pay_6PUHL7QPZ9LX4Q9B62NS5ZNB",
+      "status": "requires_action",
+      "site_id": "default_M10028",
+      "account_id": "default_M10028_mock_pix",
+      "direction": "collection",
+      "currency": "BRL",
+      "amount_minor": 129000,
+      "created_at": "2026-11-27T12:05:53Z",
+      "channel_id": "channel_builtin_pix",
+      "quote": null,
+      "statement_fee_minor": null,
+      "statement_net_minor": null,
+      "statement_status": "missing"
+    },
+    {
+      "id": "pay_CBYVKUWXH729G8RVKUEE7RPB",
+      "status": "succeeded",
+      "site_id": "default_M10028",
+      "account_id": "default_M10028_mock_card",
+      "direction": "collection",
+      "currency": "USD",
+      "amount_minor": 7900,
+      "created_at": "2026-11-27T12:05:53Z",
+      "channel_id": "channel_builtin_card",
+      "quote": null,
+      "statement_fee_minor": null,
+      "statement_net_minor": null,
+      "statement_status": "missing"
+    }
+  ],
+  "/sandbox/ops/dashboard?merchant=M20029": {
+    "channels": [
+      {
+        "id": "default_M20029_mock_card",
+        "merchant": "M20029",
+        "merchant_name": "Harbor Retail",
+        "site_name": "Default sandbox site",
+        "platform_channel_id": "channel_builtin_card",
+        "platform_channel_name": "Mock Card",
+        "provider": "mock_card",
+        "enabled": true
+      },
+      {
+        "id": "default_M20029_mock_in_redirect",
+        "merchant": "M20029",
+        "merchant_name": "Harbor Retail",
+        "site_name": "Default sandbox site",
+        "platform_channel_id": "channel_builtin_india",
+        "platform_channel_name": "Mock India redirect",
+        "provider": "mock_in_redirect",
+        "enabled": true
+      },
+      {
+        "id": "default_M20029_mock_pix",
+        "merchant": "M20029",
+        "merchant_name": "Harbor Retail",
+        "site_name": "Default sandbox site",
+        "platform_channel_id": "channel_builtin_pix",
+        "platform_channel_name": "Mock Pix",
+        "provider": "mock_pix",
+        "enabled": true
+      }
+    ],
+    "merchants": [
+      {
+        "id": "M20029",
+        "name": "Harbor Retail",
+        "sites": 1,
+        "accounts": 3
+      },
+      {
+        "id": "M10028",
+        "name": "Cedar Commerce",
+        "sites": 1,
+        "accounts": 3
+      }
+    ],
+    "payments": [],
+    "volumes": []
+  },
+  "/sandbox/ops/dashboard?tasks=1&merchant=M20029": {
+    "channels": [
+      {
+        "id": "default_M20029_mock_card",
+        "merchant": "M20029",
+        "merchant_name": "Harbor Retail",
+        "site_name": "Default sandbox site",
+        "platform_channel_id": "channel_builtin_card",
+        "platform_channel_name": "Mock Card",
+        "provider": "mock_card",
+        "enabled": true
+      },
+      {
+        "id": "default_M20029_mock_in_redirect",
+        "merchant": "M20029",
+        "merchant_name": "Harbor Retail",
+        "site_name": "Default sandbox site",
+        "platform_channel_id": "channel_builtin_india",
+        "platform_channel_name": "Mock India redirect",
+        "provider": "mock_in_redirect",
+        "enabled": true
+      },
+      {
+        "id": "default_M20029_mock_pix",
+        "merchant": "M20029",
+        "merchant_name": "Harbor Retail",
+        "site_name": "Default sandbox site",
+        "platform_channel_id": "channel_builtin_pix",
+        "platform_channel_name": "Mock Pix",
+        "provider": "mock_pix",
+        "enabled": true
+      }
+    ],
+    "merchants": [
+      {
+        "id": "M20029",
+        "name": "Harbor Retail",
+        "sites": 1,
+        "accounts": 3
+      },
+      {
+        "id": "M10028",
+        "name": "Cedar Commerce",
+        "sites": 1,
+        "accounts": 3
+      }
+    ],
+    "payments": [],
+    "sites": [
+      {
+        "id": "default_M20029",
+        "name": "Default sandbox site",
+        "is_default": true,
+        "business_domain": null,
+        "merchant_id": "M20029",
+        "merchant_name": "Harbor Retail",
+        "assigned_accounts": 3,
+        "available_accounts": 3,
+        "methods": [
+          {
+            "site_id": "default_M20029",
+            "account_id": "default_M20029_mock_pix",
+            "market": "BR",
+            "currency": "BRL",
+            "method": "pix"
+          },
+          {
+            "site_id": "default_M20029",
+            "account_id": "default_M20029_mock_in_redirect",
+            "market": "IN",
+            "currency": "INR",
+            "method": "gateway"
+          },
+          {
+            "site_id": "default_M20029",
+            "account_id": "default_M20029_mock_card",
+            "market": "US",
+            "currency": "USD",
+            "method": "card"
+          }
+        ],
+        "proposals": []
+      }
+    ],
+    "tasks": [],
+    "volumes": []
+  },
+  "/sandbox/ops/dashboard?direction=payout&merchant=M20029": {
+    "channels": [
+      {
+        "id": "default_M20029_mock_card",
+        "merchant": "M20029",
+        "merchant_name": "Harbor Retail",
+        "site_name": "Default sandbox site",
+        "platform_channel_id": "channel_builtin_card",
+        "platform_channel_name": "Mock Card",
+        "provider": "mock_card",
+        "enabled": true
+      },
+      {
+        "id": "default_M20029_mock_in_redirect",
+        "merchant": "M20029",
+        "merchant_name": "Harbor Retail",
+        "site_name": "Default sandbox site",
+        "platform_channel_id": "channel_builtin_india",
+        "platform_channel_name": "Mock India redirect",
+        "provider": "mock_in_redirect",
+        "enabled": true
+      },
+      {
+        "id": "default_M20029_mock_pix",
+        "merchant": "M20029",
+        "merchant_name": "Harbor Retail",
+        "site_name": "Default sandbox site",
+        "platform_channel_id": "channel_builtin_pix",
+        "platform_channel_name": "Mock Pix",
+        "provider": "mock_pix",
+        "enabled": true
+      }
+    ],
+    "merchants": [
+      {
+        "id": "M20029",
+        "name": "Harbor Retail",
+        "sites": 1,
+        "accounts": 3
+      },
+      {
+        "id": "M10028",
+        "name": "Cedar Commerce",
+        "sites": 1,
+        "accounts": 3
+      }
+    ],
+    "payments": [],
+    "volumes": []
+  },
+  "/sandbox/ops/operations?merchant=M20029": {
+    "accounts": [
+      {
+        "id": "default_M20029_mock_card",
+        "site_id": "default_M20029",
+        "provider": "mock_card",
+        "environment": "sandbox",
+        "enabled": true,
+        "platform_channel_id": "channel_builtin_card",
+        "platform_channel_name": "Mock Card",
+        "routing_standby": false
+      },
+      {
+        "id": "default_M20029_mock_in_redirect",
+        "site_id": "default_M20029",
+        "provider": "mock_in_redirect",
+        "environment": "sandbox",
+        "enabled": true,
+        "platform_channel_id": "channel_builtin_india",
+        "platform_channel_name": "Mock India redirect",
+        "routing_standby": false
+      },
+      {
+        "id": "default_M20029_mock_pix",
+        "site_id": "default_M20029",
+        "provider": "mock_pix",
+        "environment": "sandbox",
+        "enabled": true,
+        "platform_channel_id": "channel_builtin_pix",
+        "platform_channel_name": "Mock Pix",
+        "routing_standby": false
+      }
+    ],
+    "audit": [],
+    "channels": [
+      {
+        "id": "channel_builtin_card",
+        "name": "Mock Card",
+        "provider": "mock_card",
+        "enabled": true,
+        "market": "US",
+        "currency": "USD",
+        "method": "card"
+      },
+      {
+        "id": "channel_builtin_india",
+        "name": "Mock India redirect",
+        "provider": "mock_in_redirect",
+        "enabled": true,
+        "market": "IN",
+        "currency": "INR",
+        "method": "gateway"
+      },
+      {
+        "id": "channel_builtin_pix",
+        "name": "Mock Pix",
+        "provider": "mock_pix",
+        "enabled": true,
+        "market": "BR",
+        "currency": "BRL",
+        "method": "pix"
+      }
+    ],
+    "effective_routes": [
+      {
+        "site_id": "default_M20029",
+        "account_id": "default_M20029_mock_pix",
+        "market": "BR",
+        "currency": "BRL",
+        "method": "pix"
+      },
+      {
+        "site_id": "default_M20029",
+        "account_id": "default_M20029_mock_in_redirect",
+        "market": "IN",
+        "currency": "INR",
+        "method": "gateway"
+      },
+      {
+        "site_id": "default_M20029",
+        "account_id": "default_M20029_mock_card",
+        "market": "US",
+        "currency": "USD",
+        "method": "card"
+      }
+    ],
+    "keys": [
+      {
+        "id": "legacy_M20029",
+        "label": "Legacy sandbox key",
+        "legacy": true,
+        "platform": false
+      }
+    ],
+    "merchant_channel_quotes": [
+      {
+        "account_id": "default_M20029_mock_card",
+        "site_id": "default_M20029",
+        "channel_id": "channel_builtin_card",
+        "name": "Mock Card",
+        "provider": "mock_card",
+        "currency": "USD",
+        "direction": "collection",
+        "quote": null
+      },
+      {
+        "account_id": "default_M20029_mock_in_redirect",
+        "site_id": "default_M20029",
+        "channel_id": "channel_builtin_india",
+        "name": "Mock India redirect",
+        "provider": "mock_in_redirect",
+        "currency": "INR",
+        "direction": "collection",
+        "quote": null
+      },
+      {
+        "account_id": "default_M20029_mock_pix",
+        "site_id": "default_M20029",
+        "channel_id": "channel_builtin_pix",
+        "name": "Mock Pix",
+        "provider": "mock_pix",
+        "currency": "BRL",
+        "direction": "collection",
+        "quote": null
+      },
+      {
+        "account_id": "default_M20029_mock_card",
+        "site_id": "default_M20029",
+        "channel_id": "channel_builtin_card",
+        "name": "Mock Card",
+        "provider": "mock_card",
+        "currency": "USD",
+        "direction": "payout",
+        "quote": null
+      },
+      {
+        "account_id": "default_M20029_mock_in_redirect",
+        "site_id": "default_M20029",
+        "channel_id": "channel_builtin_india",
+        "name": "Mock India redirect",
+        "provider": "mock_in_redirect",
+        "currency": "INR",
+        "direction": "payout",
+        "quote": null
+      },
+      {
+        "account_id": "default_M20029_mock_pix",
+        "site_id": "default_M20029",
+        "channel_id": "channel_builtin_pix",
+        "name": "Mock Pix",
+        "provider": "mock_pix",
+        "currency": "BRL",
+        "direction": "payout",
+        "quote": null
+      }
+    ],
+    "routes": [],
+    "sites": [
+      {
+        "id": "default_M20029",
+        "name": "Default sandbox site",
+        "is_default": true,
+        "business_domain": null,
+        "merchant_id": "M20029",
+        "merchant_name": "Harbor Retail",
+        "assigned_accounts": 3,
+        "available_accounts": 3,
+        "methods": [
+          {
+            "site_id": "default_M20029",
+            "account_id": "default_M20029_mock_pix",
+            "market": "BR",
+            "currency": "BRL",
+            "method": "pix"
+          },
+          {
+            "site_id": "default_M20029",
+            "account_id": "default_M20029_mock_in_redirect",
+            "market": "IN",
+            "currency": "INR",
+            "method": "gateway"
+          },
+          {
+            "site_id": "default_M20029",
+            "account_id": "default_M20029_mock_card",
+            "market": "US",
+            "currency": "USD",
+            "method": "card"
+          }
+        ],
+        "proposals": []
+      }
+    ]
+  },
+  "/sandbox/ops/merchants/M20029/order-fees": [],
+  "/sandbox/workspace/session": {
+    "id": "local-admin",
+    "merchant_id": "M10028",
+    "name": "Demo Merchant Admin",
+    "role": "admin",
+    "active": true
+  },
+  "/sandbox/workspace/channel-quotes": [
+    {
+      "account_id": "default_M10028_mock_card",
+      "site_id": "default_M10028",
+      "channel_id": "channel_builtin_card",
+      "name": "Mock Card",
+      "provider": "mock_card",
+      "currency": "USD",
+      "direction": "collection",
+      "quote": null
+    },
+    {
+      "account_id": "default_M10028_mock_in_redirect",
+      "site_id": "default_M10028",
+      "channel_id": "channel_builtin_india",
+      "name": "Mock India redirect",
+      "provider": "mock_in_redirect",
+      "currency": "INR",
+      "direction": "collection",
+      "quote": null
+    },
+    {
+      "account_id": "default_M10028_mock_pix",
+      "site_id": "default_M10028",
+      "channel_id": "channel_builtin_pix",
+      "name": "Mock Pix",
+      "provider": "mock_pix",
+      "currency": "BRL",
+      "direction": "collection",
+      "quote": null
+    },
+    {
+      "account_id": "default_M10028_mock_card",
+      "site_id": "default_M10028",
+      "channel_id": "channel_builtin_card",
+      "name": "Mock Card",
+      "provider": "mock_card",
+      "currency": "USD",
+      "direction": "payout",
+      "quote": null
+    },
+    {
+      "account_id": "default_M10028_mock_in_redirect",
+      "site_id": "default_M10028",
+      "channel_id": "channel_builtin_india",
+      "name": "Mock India redirect",
+      "provider": "mock_in_redirect",
+      "currency": "INR",
+      "direction": "payout",
+      "quote": null
+    },
+    {
+      "account_id": "default_M10028_mock_pix",
+      "site_id": "default_M10028",
+      "channel_id": "channel_builtin_pix",
+      "name": "Mock Pix",
+      "provider": "mock_pix",
+      "currency": "BRL",
+      "direction": "payout",
+      "quote": null
+    }
+  ],
+  "/sandbox/workspace/settlement-summary": [],
+  "/sandbox/workspace/setup": {
+    "sites": [
+      {
+        "id": "default_M10028",
+        "name": "Default sandbox site",
+        "is_default": true,
+        "business_domain": null,
+        "merchant_id": "M10028",
+        "merchant_name": "Cedar Commerce",
+        "assigned_accounts": 3,
+        "available_accounts": 3,
+        "methods": [
+          {
+            "site_id": "default_M10028",
+            "account_id": "default_M10028_mock_pix",
+            "market": "BR",
+            "currency": "BRL",
+            "method": "pix"
+          },
+          {
+            "site_id": "default_M10028",
+            "account_id": "default_M10028_mock_in_redirect",
+            "market": "IN",
+            "currency": "INR",
+            "method": "gateway"
+          },
+          {
+            "site_id": "default_M10028",
+            "account_id": "default_M10028_mock_card",
+            "market": "US",
+            "currency": "USD",
+            "method": "card"
+          }
+        ],
+        "proposals": []
+      }
+    ],
+    "recent_currency": "USD",
+    "open_currencies": [
+      "BRL",
+      "INR",
+      "USD"
+    ],
+    "effective_account_ids": [
+      "default_M10028_mock_pix",
+      "default_M10028_mock_in_redirect",
+      "default_M10028_mock_card"
+    ]
+  },
+  "/sandbox/workspace/payments": [
+    {
+      "id": "pay_RUV5J8FV6SVLE6T6D47RPNS5",
+      "merchant_reference": "MP-104239",
+      "market": "US",
+      "currency": "USD",
+      "method": "card",
+      "amount_minor": 24900,
+      "site_id": "default_M10028",
+      "status": "succeeded",
+      "created_at": "2026-11-27T20:05:53.483806+08:00",
+      "expires_at": "2026-11-27T20:25:53.483806+08:00",
+      "paid_at": "2026-11-27T20:05:53.486671+08:00",
+      "route_snapshot": {
+        "site_id": "default_M10028",
+        "provider": "mock_card",
+        "account_id": "default_M10028_mock_card",
+        "capability": {
+          "market": "US",
+          "method": "card",
+          "currency": "USD"
+        },
+        "environment": "sandbox",
+        "capability_version": "sandbox-collections-v1",
+        "platform_channel_id": "channel_builtin_card",
+        "requests_per_second": 60
+      },
+      "quote": null
+    },
+    {
+      "id": "pay_6PUHL7QPZ9LX4Q9B62NS5ZNB",
+      "merchant_reference": "MP-104238",
+      "market": "BR",
+      "currency": "BRL",
+      "method": "pix",
+      "amount_minor": 129000,
+      "site_id": "default_M10028",
+      "status": "requires_action",
+      "created_at": "2026-11-27T20:05:53.480376+08:00",
+      "expires_at": "2026-11-27T20:25:53.480376+08:00",
+      "next_action": {
+        "type": "display_qr"
+      },
+      "route_snapshot": {
+        "site_id": "default_M10028",
+        "provider": "mock_pix",
+        "account_id": "default_M10028_mock_pix",
+        "capability": {
+          "market": "BR",
+          "method": "pix",
+          "currency": "BRL"
+        },
+        "environment": "sandbox",
+        "capability_version": "sandbox-collections-v1",
+        "platform_channel_id": "channel_builtin_pix",
+        "requests_per_second": 60
+      },
+      "quote": null
+    },
+    {
+      "id": "pay_CBYVKUWXH729G8RVKUEE7RPB",
+      "merchant_reference": "MP-104236",
+      "market": "US",
+      "currency": "USD",
+      "method": "card",
+      "amount_minor": 7900,
+      "site_id": "default_M10028",
+      "status": "succeeded",
+      "created_at": "2026-11-27T20:05:53.469055+08:00",
+      "expires_at": "2026-11-27T20:25:53.469055+08:00",
+      "paid_at": "2026-11-27T20:05:53.476457+08:00",
+      "route_snapshot": {
+        "site_id": "default_M10028",
+        "provider": "mock_card",
+        "account_id": "default_M10028_mock_card",
+        "capability": {
+          "market": "US",
+          "method": "card",
+          "currency": "USD"
+        },
+        "environment": "sandbox",
+        "capability_version": "sandbox-collections-v1",
+        "platform_channel_id": "channel_builtin_card",
+        "requests_per_second": 60
+      },
+      "quote": null
+    }
+  ],
+  "/sandbox/workspace/members": [
+    {
+      "id": "local-admin",
+      "merchant_id": "M10028",
+      "name": "Demo Merchant Admin",
+      "role": "admin",
+      "active": true
+    }
+  ],
+  "/sandbox/workspace/security": {
+    "password_set": false,
+    "mfa_enabled": false
+  },
+  "/sandbox/workspace/sites": [
+    {
+      "id": "default_M10028",
+      "name": "Default sandbox site",
+      "is_default": true,
+      "business_domain": null
+    }
+  ],
+  "/sandbox/workspace/channel-accounts": [
+    {
+      "id": "default_M10028_mock_card",
+      "site_id": "default_M10028",
+      "provider": "mock_card",
+      "environment": "sandbox",
+      "enabled": true,
+      "platform_channel_id": "channel_builtin_card",
+      "platform_channel_name": "Mock Card",
+      "routing_standby": false
+    },
+    {
+      "id": "default_M10028_mock_in_redirect",
+      "site_id": "default_M10028",
+      "provider": "mock_in_redirect",
+      "environment": "sandbox",
+      "enabled": true,
+      "platform_channel_id": "channel_builtin_india",
+      "platform_channel_name": "Mock India redirect",
+      "routing_standby": false
+    },
+    {
+      "id": "default_M10028_mock_pix",
+      "site_id": "default_M10028",
+      "provider": "mock_pix",
+      "environment": "sandbox",
+      "enabled": true,
+      "platform_channel_id": "channel_builtin_pix",
+      "platform_channel_name": "Mock Pix",
+      "routing_standby": false
+    }
+  ],
+  "/sandbox/workspace/api-keys": [
+    {
+      "id": "legacy_M10028",
+      "label": "Legacy sandbox key",
+      "legacy": true,
+      "platform": false
+    }
+  ],
+  "/sandbox/workspace/route-changes": [],
+  "/sandbox/workspace/chargebacks": [],
+  "/sandbox/workspace/settlement-requests": [],
+  "/sandbox/workspace/sites/default_M10028": {
+    "id": "default_M10028",
+    "name": "Default sandbox site",
+    "is_default": true,
+    "business_domain": null
+  },
+  "/sandbox/workspace/channel-accounts/default_M10028_mock_card": {
+    "id": "default_M10028_mock_card",
+    "site_id": "default_M10028",
+    "provider": "mock_card",
+    "environment": "sandbox",
+    "enabled": true,
+    "platform_channel_id": "channel_builtin_card",
+    "platform_channel_name": "Mock Card",
+    "routing_standby": false
+  },
+  "/sandbox/workspace/channel-accounts/default_M10028_mock_in_redirect": {
+    "id": "default_M10028_mock_in_redirect",
+    "site_id": "default_M10028",
+    "provider": "mock_in_redirect",
+    "environment": "sandbox",
+    "enabled": true,
+    "platform_channel_id": "channel_builtin_india",
+    "platform_channel_name": "Mock India redirect",
+    "routing_standby": false
+  },
+  "/sandbox/workspace/channel-accounts/default_M10028_mock_pix": {
+    "id": "default_M10028_mock_pix",
+    "site_id": "default_M10028",
+    "provider": "mock_pix",
+    "environment": "sandbox",
+    "enabled": true,
+    "platform_channel_id": "channel_builtin_pix",
+    "platform_channel_name": "Mock Pix",
+    "routing_standby": false
+  },
+  "/sandbox/workspace/members/local-admin": {
+    "id": "local-admin",
+    "merchant_id": "M10028",
+    "name": "Demo Merchant Admin",
+    "role": "admin",
+    "active": true
+  },
+  "/sandbox/workspace/overview?currency=BRL&days=7": {
+    "orders": 1,
+    "paid_orders": 0,
+    "gross_minor": "0",
+    "fees_minor": null,
+    "settled_net_minor": null
+  },
+  "/sandbox/workspace/overview?currency=BRL&days=30": {
+    "orders": 1,
+    "paid_orders": 0,
+    "gross_minor": "0",
+    "fees_minor": null,
+    "settled_net_minor": null
+  },
+  "/sandbox/workspace/overview?currency=USD&days=7": {
+    "orders": 2,
+    "paid_orders": 2,
+    "gross_minor": "32800",
+    "fees_minor": null,
+    "settled_net_minor": null
+  },
+  "/sandbox/workspace/overview?currency=USD&days=30": {
+    "orders": 2,
+    "paid_orders": 2,
+    "gross_minor": "32800",
+    "fees_minor": null,
+    "settled_net_minor": null
+  },
+  "/sandbox/workspace/overview?currency=INR&days=7": {
+    "orders": 0,
+    "paid_orders": 0,
+    "gross_minor": "0",
+    "fees_minor": null,
+    "settled_net_minor": null
+  },
+  "/sandbox/workspace/overview?currency=INR&days=30": {
+    "orders": 0,
+    "paid_orders": 0,
+    "gross_minor": "0",
+    "fees_minor": null,
+    "settled_net_minor": null
+  },
+  "/sandbox/workspace/settlement/default_M10028_mock_card/USD/totals?from=2026-11-01&through=2026-11-27": {
+    "account_id": "default_M10028_mock_card",
+    "currency": "USD",
+    "from": "2026-11-01",
+    "through": "2026-11-27",
+    "batch_count": 0,
+    "row_count": 0,
+    "gross_minor": "0",
+    "fee_minor": "0",
+    "net_minor": "0",
+    "calculated_net_minor": "0"
+  },
+  "/sandbox/workspace/settlement/default_M10028_mock_card/USD/batches": {
+    "data": []
+  },
+  "/sandbox/workspace/settlement/default_M10028_mock_card/USD/orders/collection": {
+    "data": [
+      {
+        "id": "pay_CBYVKUWXH729G8RVKUEE7RPB",
+        "channel_reference": "sim_pay_CBYVKUWXH729G8RVKUEE7RPB",
+        "expected_gross_minor": 7900,
+        "status": "succeeded",
+        "entry_count": 0,
+        "gross_minor": 0,
+        "fee_minor": 0,
+        "net_minor": 0,
+        "calculated_net_minor": 0
+      },
+      {
+        "id": "pay_RUV5J8FV6SVLE6T6D47RPNS5",
+        "channel_reference": "sim_pay_RUV5J8FV6SVLE6T6D47RPNS5",
+        "expected_gross_minor": 24900,
+        "status": "succeeded",
+        "entry_count": 0,
+        "gross_minor": 0,
+        "fee_minor": 0,
+        "net_minor": 0,
+        "calculated_net_minor": 0
+      }
+    ]
+  },
+  "/sandbox/workspace/settlement/default_M10028_mock_card/USD/orders/payout": {
+    "data": []
+  },
+  "/sandbox/workspace/settlement/default_M10028_mock_card/USD/orders/refund": {
+    "data": []
+  },
+  "/sandbox/workspace/settlement/default_M10028_mock_in_redirect/INR/totals?from=2026-11-01&through=2026-11-27": {
+    "account_id": "default_M10028_mock_in_redirect",
+    "currency": "INR",
+    "from": "2026-11-01",
+    "through": "2026-11-27",
+    "batch_count": 0,
+    "row_count": 0,
+    "gross_minor": "0",
+    "fee_minor": "0",
+    "net_minor": "0",
+    "calculated_net_minor": "0"
+  },
+  "/sandbox/workspace/settlement/default_M10028_mock_in_redirect/INR/batches": {
+    "data": []
+  },
+  "/sandbox/workspace/settlement/default_M10028_mock_in_redirect/INR/orders/collection": {
+    "data": []
+  },
+  "/sandbox/workspace/settlement/default_M10028_mock_in_redirect/INR/orders/payout": {
+    "data": []
+  },
+  "/sandbox/workspace/settlement/default_M10028_mock_in_redirect/INR/orders/refund": {
+    "data": []
+  },
+  "/sandbox/workspace/settlement/default_M10028_mock_pix/BRL/totals?from=2026-11-01&through=2026-11-27": {
+    "account_id": "default_M10028_mock_pix",
+    "currency": "BRL",
+    "from": "2026-11-01",
+    "through": "2026-11-27",
+    "batch_count": 0,
+    "row_count": 0,
+    "gross_minor": "0",
+    "fee_minor": "0",
+    "net_minor": "0",
+    "calculated_net_minor": "0"
+  },
+  "/sandbox/workspace/settlement/default_M10028_mock_pix/BRL/batches": {
+    "data": []
+  },
+  "/sandbox/workspace/settlement/default_M10028_mock_pix/BRL/orders/collection": {
+    "data": [
+      {
+        "id": "pay_6PUHL7QPZ9LX4Q9B62NS5ZNB",
+        "channel_reference": "sim_pay_6PUHL7QPZ9LX4Q9B62NS5ZNB",
+        "expected_gross_minor": 129000,
+        "status": "requires_action",
+        "entry_count": 0,
+        "gross_minor": 0,
+        "fee_minor": 0,
+        "net_minor": 0,
+        "calculated_net_minor": 0
+      }
+    ]
+  },
+  "/sandbox/workspace/settlement/default_M10028_mock_pix/BRL/orders/payout": {
+    "data": []
+  },
+  "/sandbox/workspace/settlement/default_M10028_mock_pix/BRL/orders/refund": {
+    "data": []
+  },
+  "/v1/payout-accounts": [
+    {
+      "account_id": "default_M10028_mock_pix",
+      "site_id": "default_M10028",
+      "provider": "mock_pix",
+      "currency": "BRL",
+      "recipient_type": "pix",
+      "available_minor": 1000000,
+      "reserved_minor": 0,
+      "max_payout_minor": 250000,
+      "enabled": true
+    },
+    {
+      "account_id": "default_M10028_mock_in_redirect",
+      "site_id": "default_M10028",
+      "provider": "mock_in_redirect",
+      "currency": "INR",
+      "recipient_type": "upi",
+      "available_minor": 1000000,
+      "reserved_minor": 0,
+      "max_payout_minor": 250000,
+      "enabled": true
+    },
+    {
+      "account_id": "default_M10028_mock_card",
+      "site_id": "default_M10028",
+      "provider": "mock_card",
+      "currency": "USD",
+      "recipient_type": "bank_account",
+      "available_minor": 1000000,
+      "reserved_minor": 0,
+      "max_payout_minor": 250000,
+      "enabled": true
+    }
+  ],
+  "/v1/payout-recipients": [],
+  "/v1/payouts": []
+}

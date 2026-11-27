@@ -88,7 +88,7 @@ export function MemberWorkspace({ logo, token, member, signedOut, endSession,
   const [signingOut, setSigningOut] = useState(false);
   const signOutPending = useRef(false);
   const showDemos = capabilities.paymentDemos;
-  const canCreate = member.role === "admin" || member.role === "operator";
+  const canCreate = import.meta.env.MODE !== "community-demo" && (member.role === "admin" || member.role === "operator");
 
   async function signOut() {
     if (signOutPending.current) return;

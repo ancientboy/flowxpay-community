@@ -113,7 +113,7 @@ export function PlatformWorkspace({ logo }: { logo: ReactNode }) {
   </main>;
 }
 
-function PlatformConsole({ logo, session, signOut }: {
+export function PlatformConsole({ logo, session, signOut }: {
   logo: ReactNode; session: PlatformSession; signOut: (notice?: string) => void;
 }) {
   const { t, locale } = useLocale();

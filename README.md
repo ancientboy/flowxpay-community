@@ -2,9 +2,11 @@
 
 **简体中文** · [English](README.en.md)
 
-[在线演示](https://ancientboy.github.io/flowxpay-community/?lang=zh) · [快速开始](#快速开始) · [一分钟沙盒演示](https://github.com/ancientboy/flowxpay-community/releases/tag/v0.1.0) · [API 文档](docs/merchant-api.md) · [上游适配](docs/channel-integrations.md) · [提交反馈](https://github.com/ancientboy/flowxpay-community/issues) · [Telegram 商务 @FlowXPay_nova](https://t.me/FlowXPay_nova)
+[在线演示](https://ancientboy.github.io/flowxpay-community/?lang=zh-CN) · [快速开始](#快速开始) · [一分钟沙盒演示](https://github.com/ancientboy/flowxpay-community/releases/tag/v0.1.0) · [API 文档](docs/merchant-api.md) · [上游适配](docs/channel-integrations.md) · [提交反馈](https://github.com/ancientboy/flowxpay-community/issues) · [Telegram 商务 @FlowXPay_nova](https://t.me/FlowXPay_nova)
 
 FlowXPay 是一套面向多国家和地区的开源海外四方支付系统，可部署在自己的环境中。它用统一的商户 API 和运营后台管理代收、代付、通道路由、查单、退款和对账，方便跨境支付团队接入和管理自己的上游。
+
+在线演示直接打开社区版的运营后台和商户后台，供免登录查看示例数据。自部署沙盒运行 Go API 和 PostgreSQL，支持后台操作和模拟交易。
 
 ## 社区版内置三个模拟市场
 
@@ -40,6 +42,20 @@ docker compose exec -T api cat /run/flowxpay/api/merchant-key
 - **换端口**：默认端口被占用时，可用 `FLOWXPAY_WEB_PORT=4180 docker compose up -d --build --wait`，再访问 `http://127.0.0.1:4180/`。
 - **服务器上试用**：保持回环绑定，从自己的电脑用 SSH 转发访问，例如 `ssh -N -L 4173:127.0.0.1:4173 user@your-server`。
 - **查看启动状态**：用 `docker compose ps -a` 和 `docker compose logs init db api web`。
+
+### 启用运营后台和商户后台
+
+安装 `htpasswd` 和 Python 3，在本机设置运营账号密码。下面的命令只把密码哈希交给 Compose。
+
+```bash
+operator_account=$(htpasswd -nBC 12 operator) &&
+  export FLOWXPAY_LOCAL_PLATFORM_ACCOUNTS="$(printf '%s' "$operator_account" |
+    python3 -c 'import json,sys; name, hashed = sys.stdin.read().split(":", 1); print(json.dumps({name: {"hash": hashed.strip(), "role": "operator"}}))')" &&
+  docker compose up -d --wait
+unset operator_account
+```
+
+打开 [本地运营后台](http://127.0.0.1:4173/ops?lang=zh-CN)，以 `operator` 登录。从「商户」开户并生成管理员邀请。打开本机邀请链接并设置密码，再从 [商户后台](http://127.0.0.1:4173/?lang=zh-CN) 登录。商户通道由运营后台分配。
 
 ### 本地开发启动
 

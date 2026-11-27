@@ -159,7 +159,7 @@ function SandboxPayoutWorkflow({ token, member }: { token: string; member: Membe
   const payoutQuote = quotes.data?.find(item => item.direction === "payout" && item.account_id === accountID);
   const account = accounts.data?.find(item => item.account_id === accountID && item.enabled);
   const eligible = recipients.data?.filter(recipient => recipient.type === account?.recipient_type) ?? [];
-  const canDraft = member.role !== "viewer";
+  const canDraft = import.meta.env.MODE !== "community-demo" && member.role !== "viewer";
 
   function refresh() {
     payouts.reload();
@@ -280,7 +280,7 @@ function PayoutDetail({ id, token, member, recipients, close, updated }: {
       ]}</PayoutFacts>
       {item.status === "draft" && item.created_by === member.id && <p className="muted">{t("A different admin must review this draft.")}</p>}
       <div className="detail-actions payout-actions">
-        {item.status === "draft" && member.role === "admin" && item.created_by !== member.id && (decision ? <>
+        {item.status === "draft" && import.meta.env.MODE !== "community-demo" && member.role === "admin" && item.created_by !== member.id && (decision ? <>
           <button className="primary" disabled={busy} onClick={() => void review(decision)}>
             {decision === "approve" ? t("Confirm approval") : t("Confirm rejection")}
           </button>

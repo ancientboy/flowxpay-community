@@ -264,6 +264,7 @@ function Download({ endpoint, token, name, label: buttonLabel }: { endpoint: str
     } catch (reason) { setError(message(reason)); }
     finally { setBusy(false); }
   }
+  if (import.meta.env.MODE === "community-demo") return null;
   return <><button className="secondary" onClick={() => void download()} disabled={busy}>{buttonLabel}</button>
     {error && <p className="error" role="alert">{t(error)}</p>}</>;
 }

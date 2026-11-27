@@ -4,7 +4,9 @@
 
 FlowXPay is an open-source, self-hosted platform for cross-border payment teams that manage their own provider integrations. One merchant API and an operations dashboard cover collections, payouts, routing, order lookup, refunds, and reconciliation.
 
-[Live demo](https://ancientboy.github.io/flowxpay-community/?lang=en) · [Download the one-minute sandbox demo (MP4)](https://github.com/ancientboy/flowxpay-community/releases/download/v0.1.0/flowxpay-community-v0.1.0-demo.mp4) · [Quick start](#quick-start) · [OpenAPI specification](docs/openapi.yaml)
+[Live demo](https://ancientboy.github.io/flowxpay-community/?lang=en-US) · [Download the one-minute sandbox demo (MP4)](https://github.com/ancientboy/flowxpay-community/releases/download/v0.1.0/flowxpay-community-v0.1.0-demo.mp4) · [Quick start](#quick-start) · [OpenAPI specification](docs/openapi.yaml)
+
+The live demo opens the community platform and merchant workspaces with read-only sample data. The self-hosted sandbox runs the Go API and PostgreSQL so you can perform workspace operations and simulate payments.
 
 | Sandbox market | Currency | Simulated payment method |
 | --- | --- | --- |
@@ -36,6 +38,20 @@ docker compose exec -T api cat /run/flowxpay/api/merchant-key
 - If the port is busy, run `FLOWXPAY_WEB_PORT=4180 docker compose up -d --build --wait` and open port 4180.
 - For a remote test host, keep the loopback binding and forward the dashboard with `ssh -N -L 4173:127.0.0.1:4173 user@your-server`.
 - Check startup with `docker compose ps -a` and `docker compose logs init db api web`.
+
+### Enable the platform and merchant workspaces
+
+Install `htpasswd` and Python 3, then set a local operator password. Only the password hash is passed to Compose.
+
+```bash
+operator_account=$(htpasswd -nBC 12 operator) &&
+  export FLOWXPAY_LOCAL_PLATFORM_ACCOUNTS="$(printf '%s' "$operator_account" |
+    python3 -c 'import json,sys; name, hashed = sys.stdin.read().split(":", 1); print(json.dumps({name: {"hash": hashed.strip(), "role": "operator"}}))')" &&
+  docker compose up -d --wait
+unset operator_account
+```
+
+Sign in as `operator` at the [local platform workspace](http://127.0.0.1:4173/ops?lang=en-US). Open a merchant account from **Merchants**, then open the local administrator invitation link to set a password and sign in to the [merchant workspace](http://127.0.0.1:4173/?lang=en-US). Platform operators assign merchant channels.
 
 ## Run from source
 

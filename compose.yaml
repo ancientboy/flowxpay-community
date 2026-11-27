@@ -1,0 +1,85 @@
+services:
+  init:
+    image: alpine:3.23
+    network_mode: none
+    command: ["/bin/sh", "/bootstrap.sh"]
+    volumes:
+      - ./deploy/compose/bootstrap.sh:/bootstrap.sh:ro
+      - db-secret:/run/flowxpay/db
+      - api-secrets:/run/flowxpay/api
+
+  db:
+    image: postgres:16-alpine
+    network_mode: none
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: flowxpay
+      POSTGRES_DB: flowxpay
+      POSTGRES_PASSWORD_FILE: /run/flowxpay/db/password
+      POSTGRES_INITDB_ARGS: --auth-local=scram-sha-256 --auth-host=scram-sha-256
+    command: ["postgres", "-c", "listen_addresses=", "-c", "unix_socket_directories=/var/run/postgresql"]
+    volumes:
+      - pg-data:/var/lib/postgresql/data
+      - pg-socket:/var/run/postgresql
+      - db-secret:/run/flowxpay/db:ro
+    depends_on:
+      init:
+        condition: service_completed_successfully
+    healthcheck:
+      # The temporary server used by docker-entrypoint.sh is not ready for the API.
+      test:
+        - CMD-SHELL
+        - >-
+          test "$$(cat /proc/1/comm)" = postgres &&
+          PGPASSWORD="$$(cat /run/flowxpay/db/password)"
+          psql -h /var/run/postgresql -U flowxpay -d flowxpay -Atqc 'SELECT 1' >/dev/null
+      interval: 2s
+      timeout: 3s
+      retries: 30
+      start_period: 10s
+
+  web:
+    build:
+      context: .
+      dockerfile: deploy/compose/Dockerfile
+      target: web
+    restart: unless-stopped
+    ports:
+      - target: 4173
+        published: "${FLOWXPAY_WEB_PORT:-4173}"
+        host_ip: 127.0.0.1
+        protocol: tcp
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -T 2 -O /dev/null http://127.0.0.1:4173/healthz"]
+      interval: 3s
+      timeout: 3s
+      retries: 25
+      start_period: 10s
+
+  api:
+    build:
+      context: .
+      dockerfile: deploy/compose/Dockerfile
+      target: api
+    # Nginx is the only ingress. The API still listens on loopback.
+    network_mode: service:web
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    volumes:
+      - pg-socket:/var/run/postgresql:ro
+      - db-secret:/run/flowxpay/db:ro
+      - api-secrets:/run/flowxpay/api:ro
+    depends_on:
+      db:
+        condition: service_healthy
+        restart: true
+      web:
+        condition: service_started
+        restart: true
+
+volumes:
+  pg-data:
+  pg-socket:
+  db-secret:
+  api-secrets:

@@ -1,6 +1,6 @@
 # FlowXPay 社区版 · 海外四方支付系统
 
-[快速开始](#快速开始) · [一分钟演示](https://github.com/ancientboy/flowxpay-community/releases/tag/v0.1.0) · [API 文档](docs/merchant-api.md) · [上游适配](docs/channel-integrations.md) · [提交反馈](https://github.com/ancientboy/flowxpay-community/issues) · [Telegram 商务 @FlowXPay_nova](https://t.me/FlowXPay_nova)
+[快速开始](#快速开始) · [一分钟沙盒演示](https://github.com/ancientboy/flowxpay-community/releases/tag/v0.1.0) · [API 文档](docs/merchant-api.md) · [上游适配](docs/channel-integrations.md) · [提交反馈](https://github.com/ancientboy/flowxpay-community/issues) · [Telegram 商务 @FlowXPay_nova](https://t.me/FlowXPay_nova)
 
 FlowXPay 是一套面向多国家和地区的开源海外四方支付系统，可部署在自己的环境中。它用统一的商户 API 和运营后台管理代收、代付、通道路由、查单、退款和对账，方便跨境支付团队接入和管理自己的上游。
 
@@ -18,11 +18,36 @@ FlowXPay 是一套面向多国家和地区的开源海外四方支付系统，�
 
 ## 快速开始
 
-准备 Go（版本以 [go.mod](backend/go.mod) 为准）、Node.js 22、npm、Python 3、OpenSSL 和 PostgreSQL 命令行工具（包含 `pg_config`、`initdb` 和 `pg_ctl`）。在普通用户下运行：
+### Docker Compose 一键启动
+
+安装 Docker Engine 28 或更新版本及 Compose v2，再启动 Docker。克隆仓库后，只需一条命令构建并启动社区版：
 
 ```bash
 git clone https://github.com/ancientboy/flowxpay-community.git
 cd flowxpay-community
+docker compose up -d --build --wait
+```
+
+等待启动完成后，打开 [http://127.0.0.1:4173/](http://127.0.0.1:4173/)。在终端运行下面的命令读取本次沙盒密钥，再选择「使用沙盒 API 密钥」登录。请在本机读取和使用密钥。
+
+```bash
+docker compose exec -T api cat /run/flowxpay/api/merchant-key
+```
+
+进入工作台后，新建一笔模拟代收订单，打开收银台，完成模拟支付后查单。网页端口只绑定本机回环地址。PostgreSQL 通过容器间的 Unix 套接字连接。
+
+- **停用和恢复**：用 `docker compose down` 停止，订单和密钥保留在卷里。再次执行启动命令即可恢复。
+- **换端口**：默认端口被占用时，可用 `FLOWXPAY_WEB_PORT=4180 docker compose up -d --build --wait`，再访问 `http://127.0.0.1:4180/`。
+- **服务器上试用**：保持回环绑定，从自己的电脑用 SSH 转发访问，例如 `ssh -N -L 4173:127.0.0.1:4173 user@your-server`。
+- **查看启动状态**：用 `docker compose ps -a` 和 `docker compose logs init db api web`。
+
+### 本地开发启动
+
+上方的沙盒演示视频采用下面的手动安装方式，适合在本机调试源码。
+
+准备 Go（版本以 [go.mod](backend/go.mod) 为准）、Node.js 22、npm、Python 3、OpenSSL 和 PostgreSQL 命令行工具（包含 `pg_config`、`initdb` 和 `pg_ctl`）。在普通用户下运行：
+
+```bash
 npm --prefix web ci
 ./scripts/local-sandbox.sh run
 ```

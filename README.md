@@ -37,3 +37,7 @@ npm --prefix web run build
 ```
 
 用 [GitHub Issues](https://github.com/ancientboy/flowxpay-community/issues) 提交安装问题、模拟交易问题或通道需求。附上版本、运行环境和可复现步骤，请删除密钥、真实账户、订单、支付凭证及客户资料。安全报告请走 [SECURITY.md](SECURITY.md) 的私下渠道。
+
+## 许可证
+
+FlowXPay 社区版采用 [Apache License 2.0](LICENSE)。

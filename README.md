@@ -2,7 +2,7 @@
 
 **简体中文** · [English](README.en.md)
 
-[快速开始](#快速开始) · [一分钟沙盒演示](https://github.com/ancientboy/flowxpay-community/releases/tag/v0.1.0) · [API 文档](docs/merchant-api.md) · [上游适配](docs/channel-integrations.md) · [提交反馈](https://github.com/ancientboy/flowxpay-community/issues) · [Telegram 商务 @FlowXPay_nova](https://t.me/FlowXPay_nova)
+[在线演示](https://ancientboy.github.io/flowxpay-community/?lang=zh) · [快速开始](#快速开始) · [一分钟沙盒演示](https://github.com/ancientboy/flowxpay-community/releases/tag/v0.1.0) · [API 文档](docs/merchant-api.md) · [上游适配](docs/channel-integrations.md) · [提交反馈](https://github.com/ancientboy/flowxpay-community/issues) · [Telegram 商务 @FlowXPay_nova](https://t.me/FlowXPay_nova)
 
 FlowXPay 是一套面向多国家和地区的开源海外四方支付系统，可部署在自己的环境中。它用统一的商户 API 和运营后台管理代收、代付、通道路由、查单、退款和对账，方便跨境支付团队接入和管理自己的上游。
 

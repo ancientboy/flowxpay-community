@@ -4,7 +4,7 @@
 
 FlowXPay is an open-source, self-hosted platform for cross-border payment teams that manage their own provider integrations. One merchant API and an operations dashboard cover collections, payouts, routing, order lookup, refunds, and reconciliation.
 
-[Download the one-minute sandbox demo (MP4)](https://github.com/ancientboy/flowxpay-community/releases/download/v0.1.0/flowxpay-community-v0.1.0-demo.mp4) · [Quick start](#quick-start) · [OpenAPI specification](docs/openapi.yaml)
+[Live demo](https://ancientboy.github.io/flowxpay-community/?lang=en) · [Download the one-minute sandbox demo (MP4)](https://github.com/ancientboy/flowxpay-community/releases/download/v0.1.0/flowxpay-community-v0.1.0-demo.mp4) · [Quick start](#quick-start) · [OpenAPI specification](docs/openapi.yaml)
 
 | Sandbox market | Currency | Simulated payment method |
 | --- | --- | --- |

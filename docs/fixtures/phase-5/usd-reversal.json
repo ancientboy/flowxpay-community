@@ -1,0 +1,10 @@
+{
+  "id": "sample-usd-20261201",
+  "statement_date": "2026-12-01",
+  "settlement_status": "pending",
+  "withdrawal_status": "not_reported",
+  "withdrawal_reference": "",
+  "entries": [
+    {"id":"usd-reversal-1","kind":"reversal","channel_reference":"mock-collection-01","reverses_entry":"usd-collection-1","gross_minor":-10000,"fee_minor":-300,"net_minor":-9700}
+  ]
+}

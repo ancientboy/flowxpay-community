@@ -1,0 +1,10 @@
+{
+  "id": "sample-usd-20261119",
+  "statement_date": "2026-11-19",
+  "settlement_status": "settled",
+  "withdrawal_status": "pending",
+  "withdrawal_reference": "mock-withdrawal-brl-01",
+  "entries": [
+    {"id":"usd-collection-1","kind":"collection","channel_reference":"mock-collection-01","gross_minor":3000,"fee_minor":60,"net_minor":2940}
+  ]
+}

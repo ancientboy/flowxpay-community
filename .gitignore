@@ -1,0 +1,13 @@
+.DS_Store
+node_modules
+dist/
+.vite/
+__pycache__/
+*.pyc
+*.log
+*.sqlite*
+*.pem
+*.key
+.env
+.env.*
+!.env.example

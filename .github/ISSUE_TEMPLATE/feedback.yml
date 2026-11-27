@@ -1,0 +1,25 @@
+name: 使用反馈
+description: 报告沙盒问题或建议通道和功能
+body:
+  - type: dropdown
+    id: category
+    attributes:
+      label: 类型
+      options:
+        - 安装部署
+        - 模拟订单或后台
+        - 通道需求
+        - 功能建议
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: 版本和使用场景
+      description: 写明系统环境、版本、复现步骤或需要的国家、币种和交易方向。请删除凭据和真实客户及交易资料。
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: 期望的结果

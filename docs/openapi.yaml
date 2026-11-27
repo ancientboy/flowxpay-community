@@ -1,0 +1,3055 @@
+openapi: 3.1.0
+info:
+  title: FlowXPay Merchant API
+  version: 0.7.0
+  description: Local sandbox contract for merchant collections, payouts and settlement. All funds and channel actions are simulated.
+externalDocs:
+  description: Merchant sandbox integration guide
+  url: merchant-api.md
+
+servers:
+  - url: /v1
+security:
+  - SandboxKey: []
+paths:
+  /capabilities:
+    get:
+      operationId: listCapabilities
+      summary: Read enabled sandbox methods for the authenticated merchant
+      responses:
+        '200':
+          description: Merchant and enabled methods
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [environment, capability_version, merchant, payments, sites]
+                properties:
+                  environment: { const: sandbox }
+                  capability_version: { const: sandbox-collections-v1 }
+                  request_signing_required: { type: boolean, description: Whether payment creation and refunds require Ed25519 request signatures. }
+                  merchant:
+                    type: object
+                    required: [id, name]
+                    properties:
+                      id: { type: string }
+                      name: { type: string }
+                  payments:
+                    description: Eligible payment methods for the default site.
+                    type: array
+                    items: { $ref: '#/components/schemas/Capability' }
+                  sites:
+                    type: array
+                    items: { $ref: '#/components/schemas/SiteCapability' }
+        '401': { $ref: '#/components/responses/Error' }
+        '503': { $ref: '#/components/responses/Error' }
+  /payments:
+    get:
+      operationId: listPayments
+      summary: List up to 100 recent payments for the authenticated merchant
+      parameters:
+        - name: merchant_reference
+          in: query
+          description: Optional exact match to recover an existing payment by merchant reference
+          schema: { $ref: '#/components/schemas/Reference' }
+      responses:
+        '200':
+          description: Recent payments or the exact matching reference
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/Payment' }
+        '400': { $ref: '#/components/responses/Error' }
+        '401': { $ref: '#/components/responses/Error' }
+        '503': { $ref: '#/components/responses/Error' }
+    post:
+      operationId: createPayment
+      summary: Reserve a payment on one sandbox channel account and return the current order state
+      parameters:
+        - { name: FlowXPay-Key-ID, in: header, required: false, description: Required for enrolled signed merchants., schema: { $ref: '#/components/schemas/Reference' } }
+        - { name: FlowXPay-Request-Timestamp, in: header, required: false, description: Required for enrolled signed merchants. UTC Unix seconds within 300 seconds., schema: { type: string, pattern: '^[0-9]+$' } }
+        - { name: FlowXPay-Request-Nonce, in: header, required: false, description: Required for enrolled signed merchants. Unique per merchant and request., schema: { type: string, pattern: '^[A-Za-z0-9_-]{22,64}$' } }
+        - { name: FlowXPay-Request-Signature, in: header, required: false, description: Required for enrolled signed merchants. Ed25519 unpadded Base64URL., schema: { type: string, pattern: '^[A-Za-z0-9_-]{86}$' } }
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema: { $ref: '#/components/schemas/Reference' }
+          description: Reuse this key for the same request until its result is known.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PaymentRequest' }
+            examples:
+              brazilPix:
+                value: { merchant_reference: 'BR-DEMO-01', market: BR, currency: BRL, method: pix, amount_minor: 129000 }
+              usCard:
+                value: { merchant_reference: 'US-DEMO-01', market: US, currency: USD, method: card, amount_minor: 24900 }
+              indiaGateway:
+                value: { merchant_reference: 'IN-DEMO-01', market: IN, currency: INR, method: gateway, amount_minor: 24900 }
+      responses:
+        '201':
+          description: Payment reserved. Inspect status and failure_code before using any action.
+          headers:
+            Location:
+              schema: { type: string }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Payment' }
+        '200':
+          description: Idempotent replay. Returns the current state of the original payment.
+          headers:
+            Idempotency-Replayed:
+              schema: { type: string, const: 'true' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Payment' }
+        '400': { $ref: '#/components/responses/Error' }
+        '401': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+        '409': { $ref: '#/components/responses/Error' }
+        '415': { $ref: '#/components/responses/Error' }
+        '429':
+          description: Local account budget exhausted before dispatch. Retry using the original key.
+          headers:
+            Retry-After:
+              schema: { type: integer, const: 1 }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '503': { $ref: '#/components/responses/Error' }
+  /payments/{id}:
+    get:
+      operationId: getPayment
+      summary: Read a payment belonging to the authenticated merchant
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Current payment
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Payment' }
+        '401': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+        '503': { $ref: '#/components/responses/Error' }
+  /payments/{id}/refunds:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string }
+    get:
+      operationId: listPaymentRefunds
+      summary: List up to 100 recent refunds for the authenticated merchant's payment
+      responses:
+        '200':
+          description: Refund records with their own state
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/Refund' }
+        '401': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+        '503': { $ref: '#/components/responses/Error' }
+    post:
+      operationId: createRefund
+      summary: Reserve a simulated refund against the original paid transaction and account
+      parameters:
+        - { name: FlowXPay-Key-ID, in: header, required: false, description: Required for enrolled signed merchants., schema: { $ref: '#/components/schemas/Reference' } }
+        - { name: FlowXPay-Request-Timestamp, in: header, required: false, description: Required for enrolled signed merchants. UTC Unix seconds within 300 seconds., schema: { type: string, pattern: '^[0-9]+$' } }
+        - { name: FlowXPay-Request-Nonce, in: header, required: false, description: Required for enrolled signed merchants. Unique per merchant and request., schema: { type: string, pattern: '^[A-Za-z0-9_-]{22,64}$' } }
+        - { name: FlowXPay-Request-Signature, in: header, required: false, description: Required for enrolled signed merchants. Ed25519 unpadded Base64URL., schema: { type: string, pattern: '^[A-Za-z0-9_-]{86}$' } }
+        - name: Idempotency-Key
+          in: header
+          required: true
+          description: Keep the same key, payment and amount until the original refund is identified.
+          schema: { $ref: '#/components/schemas/Reference' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [amount_minor]
+              properties:
+                amount_minor: { type: integer, minimum: 1, maximum: 999999999999 }
+      responses:
+        '201':
+          description: Reserved refund. Inspect its current status.
+          headers:
+            Location:
+              schema: { type: string }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Refund' }
+        '200':
+          description: Current state of the originally reserved refund
+          headers:
+            Idempotency-Replayed:
+              schema: { type: string, const: 'true' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Refund' }
+        '400': { $ref: '#/components/responses/Error' }
+        '401': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+        '409':
+          description: Conflicting key, unavailable original transaction, or cumulative balance exceeded
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '415': { $ref: '#/components/responses/Error' }
+        '429':
+          description: Original channel account rate limit reached before reservation committed
+          headers:
+            Retry-After:
+              schema: { type: string, const: '1' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '503': { $ref: '#/components/responses/Error' }
+  /refunds/{id}:
+    get:
+      operationId: getRefund
+      summary: Read a refund independently of its payment
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Refund state
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Refund' }
+        '401': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+        '503': { $ref: '#/components/responses/Error' }
+  /collection-exceptions:
+    get:
+      operationId: listCollectionExceptions
+      summary: List up to 100 recent collection exceptions for the authenticated merchant
+      responses:
+        '200':
+          description: Pending confirmations, contradictory callbacks, replay conflicts and failed Webhook deliveries
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/CollectionException' }
+        '401': { $ref: '#/components/responses/Error' }
+        '503': { $ref: '#/components/responses/Error' }
+  /payout-accounts:
+    get:
+      operationId: listPayoutAccounts
+      security: [{ WorkspaceSession: [] }]
+      summary: Read available, reserved and per-order limits by provisioned sandbox account
+      responses:
+        '200':
+          description: Merchant-owned sandbox payout accounts and their limits
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/PayoutAccount' }
+        '401': { $ref: '#/components/responses/Error' }
+        '503': { $ref: '#/components/responses/Error' }
+  /payout-recipients:
+    get:
+      operationId: listPayoutRecipients
+      security: [{ WorkspaceSession: [] }]
+      summary: List masked recipients in the workspace
+      responses:
+        '200':
+          description: Masked recipients
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/PayoutRecipient' }
+        '401': { $ref: '#/components/responses/Error' }
+        '503': { $ref: '#/components/responses/Error' }
+    post:
+      operationId: createPayoutRecipient
+      security: [{ WorkspaceSession: [] }]
+      summary: Create a fictional recipient as an operator or admin
+      parameters:
+        - $ref: '#/components/parameters/PayoutIdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [type, test_suffix]
+              properties:
+                type: { $ref: '#/components/schemas/PayoutRecipientType' }
+                test_suffix: { type: string, pattern: '^[0-9]{4}$', description: Four invented digits for display. }
+      responses:
+        '200': { $ref: '#/components/responses/PayoutRecipient' }
+        '201': { $ref: '#/components/responses/PayoutRecipient' }
+        '400': { $ref: '#/components/responses/Error' }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+        '409': { $ref: '#/components/responses/Error' }
+        '415': { $ref: '#/components/responses/Error' }
+        '503': { $ref: '#/components/responses/Error' }
+  /payouts:
+    get:
+      operationId: listPayouts
+      security: [{ WorkspaceSession: [] }]
+      summary: List up to 100 recent workspace payouts or search by full order number
+      parameters:
+        - name: reference
+          in: query
+          description: Case-sensitive exact match against either the platform payout ID or the merchant reference. If both filters are supplied, both must match.
+          schema: { $ref: '#/components/schemas/Reference' }
+        - name: merchant_reference
+          in: query
+          description: Case-sensitive exact match against the merchant reference.
+          schema: { $ref: '#/components/schemas/Reference' }
+      responses:
+        '200':
+          description: Workspace payouts
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Payout' }
+        '400': { $ref: '#/components/responses/Error' }
+        '401': { $ref: '#/components/responses/Error' }
+        '503': { $ref: '#/components/responses/Error' }
+    post:
+      operationId: createPayoutDraft
+      security: [{ WorkspaceSession: [] }]
+      summary: Create a draft as an operator or admin without reserving funds
+      parameters:
+        - $ref: '#/components/parameters/PayoutIdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/PayoutRequest'
+              unevaluatedProperties: false
+      responses:
+        '200': { $ref: '#/components/responses/Payout' }
+        '201': { $ref: '#/components/responses/Payout' }
+        '400': { $ref: '#/components/responses/Error' }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+        '409': { $ref: '#/components/responses/Error' }
+        '415': { $ref: '#/components/responses/Error' }
+        '422':
+          description: Account, recipient type, currency or amount is ineligible
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '503': { $ref: '#/components/responses/Error' }
+  /payouts/{id}:
+    parameters:
+      - $ref: '#/components/parameters/PayoutID'
+    get:
+      operationId: getPayout
+      security: [{ WorkspaceSession: [] }]
+      summary: Read the current payout and review state
+      responses:
+        '200': { $ref: '#/components/responses/Payout' }
+        '401': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+        '503': { $ref: '#/components/responses/Error' }
+  /payouts/{id}/approve:
+    parameters:
+      - $ref: '#/components/parameters/PayoutID'
+    post:
+      operationId: approvePayout
+      security: [{ WorkspaceSession: [] }]
+      summary: A different admin approves the draft and atomically reserves the original account's funds
+      description: >
+        The sandbox worker checks the original account's rolling one-second dispatch limit and
+        UTC daily quota before submission. A limit failure releases the funds reservation and is
+        visible on the payout. Repeating the same decision as the recorded reviewer returns the current payout.
+      responses:
+        '200': { $ref: '#/components/responses/Payout' }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+        '409': { $ref: '#/components/responses/Error' }
+        '503': { $ref: '#/components/responses/Error' }
+  /payouts/{id}/reject:
+    parameters:
+      - $ref: '#/components/parameters/PayoutID'
+    post:
+      operationId: rejectPayout
+      security: [{ WorkspaceSession: [] }]
+      summary: A different admin rejects the draft before submission
+      description: Repeating the same decision as the recorded reviewer returns the current payout.
+      responses:
+        '200': { $ref: '#/components/responses/Payout' }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+        '409': { $ref: '#/components/responses/Error' }
+        '503': { $ref: '#/components/responses/Error' }
+  /sandbox/workspace/api-keys:
+    servers: [{ url: / }]
+    get:
+      operationId: listWorkspaceAPIKeys
+      security: [{ WorkspaceSession: [] }]
+      summary: List key metadata and audit history for the current merchant (admin)
+      description: >
+        Legacy credentials appear as metadata. Managed key digests and plaintext secrets are excluded.
+      responses:
+        '200':
+          description: Current merchant resource list
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/WorkspaceAPIKey' }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+        '503': { $ref: '#/components/responses/Error' }
+    post:
+      operationId: createWorkspaceAPIKey
+      security: [{ WorkspaceSession: [] }]
+      deprecated: true
+      summary: Reject standalone merchant key issuance
+      responses:
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+  /sandbox/workspace/api-keys/{id}/rotate:
+    servers: [{ url: / }]
+    parameters: [{ $ref: '#/components/parameters/WorkspaceControlID' }]
+    post:
+      operationId: rotateWorkspaceAPIKey
+      security: [{ WorkspaceSession: [] }]
+      summary: Rotate an active merchant-managed key (admin)
+      description: >
+        Atomically retires the current key and returns a replacement secret once.
+        Omit the label to retain the current label. Platform-issued keys are managed by platform operators.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                label: { type: string, minLength: 1, maxLength: 100 }
+      responses:
+        '201':
+          description: Replacement key and one-time secret
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/IssuedWorkspaceAPIKey' }
+        '400': { $ref: '#/components/responses/Error' }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+        '409': { $ref: '#/components/responses/Error' }
+        '415': { $ref: '#/components/responses/Error' }
+        '503': { $ref: '#/components/responses/Error' }
+  /sandbox/workspace/api-keys/{id}/revoke:
+    servers: [{ url: / }]
+    parameters: [{ $ref: '#/components/parameters/WorkspaceControlID' }]
+    post:
+      operationId: revokeWorkspaceAPIKey
+      security: [{ WorkspaceSession: [] }]
+      summary: Revoke a merchant-managed key (admin)
+      description: Repeating a revocation returns the original retirement metadata.
+      responses:
+        '200':
+          description: Revoked key metadata
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/WorkspaceAPIKey' }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+        '503': { $ref: '#/components/responses/Error' }
+  /sandbox/workspace/route-changes:
+    servers: [{ url: / }]
+    get:
+      operationId: listCollectionRouteChanges
+      security: [{ WorkspaceSession: [] }]
+      summary: List collection routing changes and audit history
+      description: >
+        Available to admins, operators and viewers within their merchant.
+      responses:
+        '200':
+          description: Current merchant resource list
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/CollectionRouteChange' }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+        '503': { $ref: '#/components/responses/Error' }
+    post:
+      operationId: submitCollectionRouteChange
+      security: [{ WorkspaceSession: [] }]
+      deprecated: true
+      summary: Reject legacy merchant write
+      responses:
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+  /sandbox/workspace/route-changes/{id}/approve:
+    servers: [{ url: / }]
+    parameters: [{ $ref: '#/components/parameters/WorkspaceControlID' }]
+    post:
+      operationId: approveCollectionRouteChange
+      security: [{ WorkspaceSession: [] }]
+      deprecated: true
+      summary: Reject legacy merchant write
+      responses:
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+  /sandbox/ops/merchants:
+    servers: [{ url: / }]
+    get:
+      operationId: listPlatformMerchants
+      summary: Search the sandbox merchant directory by name or ID
+      security: [{ PlatformSession: [] }]
+      parameters:
+        - name: q
+          in: query
+          description: Case-insensitive literal substring of the merchant name or ID.
+          schema: { type: string, maxLength: 100 }
+        - name: after
+          in: query
+          description: Use next_after from the preceding page with the same search.
+          schema: { $ref: '#/components/schemas/Reference' }
+      responses:
+        '200':
+          description: At most 100 matching merchants, ordered by ID.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PlatformMerchantPage' }
+        '400': { $ref: '#/components/responses/Error' }
+        '401': { $ref: '#/components/responses/Error' }
+        '503': { $ref: '#/components/responses/Error' }
+    post:
+      operationId: onboardPlatformMerchant
+      summary: Open a sandbox merchant with its default site, first administrator invitation and initial API key
+      security: [{ PlatformSession: [] }]
+      description: >
+        Requires a platform operator. The merchant, site, invitation, platform-managed sandbox API key and
+        audit records commit together. The invitation link and key secret are only returned in the initial 201.
+        The invitation expires after 24 hours. The operator shares the returned link manually.
+        Optional site and administrator names default to the normalized merchant name and email local part.
+        Retry with the original key and input if the result is unknown.
+      parameters:
+        - $ref: '#/components/parameters/OnboardingIdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PlatformOnboardingInput' }
+      responses:
+        '200':
+          description: Identical replay with current safe onboarding metadata.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PlatformOnboarding' }
+        '201':
+          description: Committed onboarding with the one-time invitation link and sandbox API key secret.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/IssuedPlatformOnboarding' }
+        '400': { $ref: '#/components/responses/Error' }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+        '409': { $ref: '#/components/responses/Error' }
+        '415': { $ref: '#/components/responses/Error' }
+        '503': { $ref: '#/components/responses/Error' }
+  /sandbox/ops/merchants/{merchant}/admin-invitation:
+    servers: [{ url: / }]
+    post:
+      operationId: reissuePlatformAdminInvitation
+      summary: Replace a lost or expired first administrator invitation
+      security: [{ PlatformSession: [] }]
+      description: >
+        Requires a platform operator and the current invite_version from merchant-scoped operations.
+        A replacement invalidates the previous link in the same transaction and uses the original
+        administrator identity. An accepted invitation or stale version returns HTTP 409.
+        Identical replays expose current metadata only, with no invitation link.
+      parameters:
+        - name: merchant
+          in: path
+          required: true
+          schema: { $ref: '#/components/schemas/Reference' }
+        - $ref: '#/components/parameters/OnboardingIdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [invite_version]
+              properties:
+                invite_version: { type: integer, minimum: 1 }
+      responses:
+        '200':
+          description: Identical replay with current safe onboarding metadata.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PlatformOnboarding' }
+        '201':
+          description: Committed replacement and its one-time invitation link.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/IssuedPlatformAdminInvitation' }
+        '400': { $ref: '#/components/responses/Error' }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+        '409': { $ref: '#/components/responses/Error' }
+        '415': { $ref: '#/components/responses/Error' }
+        '503': { $ref: '#/components/responses/Error' }
+  /sandbox/ops/dashboard:
+    servers: [{ url: / }]
+    get:
+      operationId: getPlatformDashboard
+      summary: Read the platform overview and optionally its collection setup tasks
+      security: [{ PlatformSession: [] }]
+      parameters:
+        - name: merchant
+          in: query
+          schema: { $ref: '#/components/schemas/Reference' }
+        - name: reference
+          in: query
+          description: Filter the collection orders by exact platform payment ID or merchant reference, within the selected merchant if supplied.
+          schema: { $ref: '#/components/schemas/Reference' }
+        - name: tasks
+          in: query
+          description: Set to 1 to include scoped site cards, task counts and the first ten entries per group.
+          schema: { type: string, enum: ['1'] }
+      responses:
+        '200':
+          description: Platform dashboard with role-aware task groups when requested.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [merchants, volumes, payments, channels]
+                properties:
+                  merchants: { type: array, items: { $ref: '#/components/schemas/PlatformMerchant' } }
+                  volumes: { type: array, items: { type: object } }
+                  payments:
+                    type: array
+                    items:
+                      type: object
+                      required: [id, merchant, reference, currency, amount_minor, status, created_at]
+                      properties:
+                        id: { type: string, description: Platform payment ID }
+                        merchant: { type: string }
+                        reference: { type: string, description: Merchant reference }
+                        currency: { type: string }
+                        amount_minor: { type: integer }
+                        status: { type: string }
+                        created_at: { type: string, format: date-time }
+                  channels: { type: array, items: { type: object } }
+                  sites: { type: array, items: { $ref: '#/components/schemas/SiteCard' } }
+                  tasks:
+                    type: array
+                    items: { $ref: '#/components/schemas/PlatformTaskGroup' }
+        '400': { $ref: '#/components/responses/Error' }
+        '401': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+        '503': { $ref: '#/components/responses/Error' }
+  /sandbox/ops/prices:
+    servers: [{ url: / }]
+    get:
+      operationId: listChannelPrices
+      summary: List current catalog rates. Costs require operator access.
+      security: [{ PlatformSession: [] }]
+      responses:
+        '200':
+          description: Current result
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ChannelPrices' }
+        '400': { $ref: '#/components/responses/Error' }
+        '401': { $ref: '#/components/responses/Error' }
+        '503': { $ref: '#/components/responses/Error' }
+  /sandbox/ops/merchants/{merchant}/prices:
+    servers: [{ url: / }]
+    parameters:
+      - name: merchant
+        in: path
+        required: true
+        schema: { $ref: '#/components/schemas/Reference' }
+    get:
+      operationId: listMerchantChannelPrices
+      summary: List catalog rates and the selected merchant’s overrides. Costs require operator access.
+      security: [{ PlatformSession: [] }]
+      responses:
+        '200':
+          description: Current result
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ChannelPrices' }
+        '400': { $ref: '#/components/responses/Error' }
+        '401': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+        '503': { $ref: '#/components/responses/Error' }
+  /sandbox/ops/channels/{id}/prices:
+    servers: [{ url: / }]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { $ref: '#/components/schemas/Reference' }
+    put:
+      operationId: publishChannelPrice
+      summary: Publish an immediate channel cost or default merchant rate. Requires a platform operator.
+      security: [{ PlatformSession: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PublishChannelPrice' }
+      responses:
+        '200':
+          description: Current result
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PublishedPrice' }
+        '201':
+          description: Created and audited
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PublishedPrice' }
+        '400': { $ref: '#/components/responses/Error' }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+        '415': { $ref: '#/components/responses/Error' }
+        '503': { $ref: '#/components/responses/Error' }
+  /sandbox/ops/merchants/{merchant}/channels/{id}/prices:
+    servers: [{ url: / }]
+    parameters:
+      - name: merchant
+        in: path
+        required: true
+        schema: { $ref: '#/components/schemas/Reference' }
+      - name: id
+        in: path
+        required: true
+        schema: { $ref: '#/components/schemas/Reference' }
+    put:
+      operationId: publishMerchantChannelPrice
+      summary: Publish or restore a merchant-specific rate. Requires a platform operator.
+      security: [{ PlatformSession: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PublishChannelPrice' }
+      responses:
+        '200':
+          description: Current result
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PublishedPrice' }
+        '201':
+          description: Created and audited
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PublishedPrice' }
+        '400': { $ref: '#/components/responses/Error' }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+        '415': { $ref: '#/components/responses/Error' }
+        '503': { $ref: '#/components/responses/Error' }
+  /sandbox/ops/merchants/{merchant}/sites/{site}/switch/{id}:
+    servers: [{ url: / }]
+    parameters:
+      - name: merchant
+        in: path
+        required: true
+        schema: { $ref: '#/components/schemas/Reference' }
+      - name: site
+        in: path
+        required: true
+        schema: { $ref: '#/components/schemas/Reference' }
+      - name: id
+        in: path
+        required: true
+        schema: { $ref: '#/components/schemas/Reference' }
+    get:
+      operationId: previewCollectionChannelSwitch
+      summary: Compare the current and selected channels for the target capability. Costs and the confirmation digest require operator access.
+      security: [{ PlatformSession: [] }]
+      responses:
+        '200':
+          description: Current result
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CollectionSwitchPreview' }
+        '400': { $ref: '#/components/responses/Error' }
+        '401': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+        '409': { $ref: '#/components/responses/Error' }
+        '503': { $ref: '#/components/responses/Error' }
+    post:
+      operationId: confirmCollectionChannelSwitch
+      summary: Confirm the reviewed rates and route. Assign the channel when necessary and activate atomically.
+      security: [{ PlatformSession: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ConfirmCollectionSwitch' }
+      responses:
+        '200':
+          description: Current result
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CollectionRouteChange' }
+        '201':
+          description: Created and audited
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CollectionRouteChange' }
+        '400': { $ref: '#/components/responses/Error' }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+        '409': { $ref: '#/components/responses/Error' }
+        '415': { $ref: '#/components/responses/Error' }
+        '503': { $ref: '#/components/responses/Error' }
+  /sandbox/ops/merchants/{merchant}/order-fees:
+    servers: [{ url: / }]
+    parameters:
+      - name: merchant
+        in: path
+        required: true
+        schema: { $ref: '#/components/schemas/Reference' }
+    get:
+      operationId: listPlatformOrderFees
+      summary: Read up to 100 recent orders and statement evidence. Estimated channel cost and gross margin require operator access.
+      security: [{ PlatformSession: [] }]
+      parameters:
+        - name: site_id
+          in: query
+          description: Scope orders to a site owned by the selected merchant.
+          schema: { $ref: '#/components/schemas/Reference' }
+        - name: reference
+          in: query
+          description: Exact platform order ID or merchant reference.
+          schema: { $ref: '#/components/schemas/Reference' }
+      responses:
+        '200':
+          description: Current result
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PlatformOrderFees' }
+        '400': { $ref: '#/components/responses/Error' }
+        '401': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+        '503': { $ref: '#/components/responses/Error' }
+  /sandbox/workspace/channel-quotes:
+    servers: [{ url: / }]
+    get:
+      operationId: listWorkspaceChannelQuotes
+      summary: List the signed-in merchant’s effective collection and enabled payout account rates.
+      security: [{ WorkspaceSession: [] }]
+      responses:
+        '200':
+          description: Current result
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/MerchantChannelQuotes' }
+        '400': { $ref: '#/components/responses/Error' }
+        '401': { $ref: '#/components/responses/Error' }
+        '503': { $ref: '#/components/responses/Error' }
+  /sandbox/ops/finance:
+    servers: [{ url: / }]
+    get:
+      operationId: getPlatformFinance
+      summary: Report sandbox volumes, payouts and settlement batches by merchant and UTC date range
+      security: [{ PlatformSession: [] }]
+      parameters:
+        - { name: merchant, in: query, schema: { $ref: '#/components/schemas/Reference' } }
+        - { name: from, in: query, schema: { type: string, format: date } }
+        - { name: to, in: query, schema: { type: string, format: date } }
+      responses:
+        '200':
+          description: Volume grouped by direction and currency. Profit estimates are available to platform operators only.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PlatformFinance' }
+        '400': { $ref: '#/components/responses/Error' }
+        '401': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+        '503': { $ref: '#/components/responses/Error' }
+  /sandbox/ops/operations:
+    servers: [{ url: / }]
+    get:
+      operationId: getPlatformOperations
+      summary: Read mock channels, audit and optional merchant-scoped resources
+      security: [{ PlatformSession: [] }]
+      parameters:
+        - name: merchant
+          in: query
+          required: false
+          schema: { $ref: '#/components/schemas/Reference' }
+      responses:
+        '200':
+          description: Current platform sandbox state
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PlatformOperations' }
+        '400': { $ref: '#/components/responses/Error' }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+        '503': { $ref: '#/components/responses/Error' }
+  /sandbox/ops/channels:
+    servers: [{ url: / }]
+    post:
+      operationId: createPlatformChannel
+      summary: Configure a mock channel using a supported applicability profile
+      security: [{ PlatformSession: [] }]
+      description: >
+        Requires the platform operator role. Omit the ID to allocate it on the server. In this mode
+        Idempotency-Key is required and a blank or omitted name defaults to the mock template name.
+        A supplied ID requires a name and keeps the existing duplicate-ID conflict behavior.
+      parameters:
+        - name: Idempotency-Key
+          in: header
+          required: false
+          schema: { $ref: '#/components/schemas/Reference' }
+          description: Required for a generated ID. Reuse this key and the same details for retries.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PlatformChannelInput' }
+      responses:
+        '200':
+          description: Matching generated-ID request replay with current channel details.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PlatformChannel' }
+        '201':
+          description: Result committed with audit
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PlatformChannel' }
+        '400': { $ref: '#/components/responses/Error' }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+        '409': { $ref: '#/components/responses/Error' }
+        '415': { $ref: '#/components/responses/Error' }
+        '503': { $ref: '#/components/responses/Error' }
+  /sandbox/ops/channels/{id}/status:
+    servers: [{ url: / }]
+    put:
+      operationId: setPlatformChannelStatus
+      summary: Enable or disable a mock channel for new reservations
+      security: [{ PlatformSession: [] }]
+      description: Requires the platform operator role.
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceControlID'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PlatformChannelStatus' }
+      responses:
+        '200':
+          description: Result committed with audit
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PlatformChannel' }
+        '400': { $ref: '#/components/responses/Error' }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+        '409': { $ref: '#/components/responses/Error' }
+        '415': { $ref: '#/components/responses/Error' }
+        '503': { $ref: '#/components/responses/Error' }
+  /sandbox/ops/merchants/{merchant}/assignments:
+    servers: [{ url: / }]
+    post:
+      operationId: assignPlatformChannel
+      summary: Assign a channel to an owned site on standby
+      security: [{ PlatformSession: [] }]
+      description: Requires the platform operator role. New assignments require an enabled channel.
+      parameters:
+        - name: merchant
+          in: path
+          required: true
+          schema: { $ref: '#/components/schemas/Reference' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PlatformAssignmentInput' }
+      responses:
+        '200':
+          description: Existing assignment for the same merchant, site and channel
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PlatformAssignment' }
+        '201':
+          description: Result committed with audit
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PlatformAssignment' }
+        '400': { $ref: '#/components/responses/Error' }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+        '409': { $ref: '#/components/responses/Error' }
+        '415': { $ref: '#/components/responses/Error' }
+        '503': { $ref: '#/components/responses/Error' }
+  /sandbox/ops/merchants/{merchant}/routes:
+    servers: [{ url: / }]
+    post:
+      operationId: submitPlatformRoute
+      summary: Configure an enabled account for a site and payment capability
+      security: [{ PlatformSession: [] }]
+      description: Requires the platform operator role. Set activate to true to activate immediately. Omit it to preserve the pending-proposal API flow.
+      parameters:
+        - name: merchant
+          in: path
+          required: true
+          schema: { $ref: '#/components/schemas/Reference' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CollectionRouteChangeRequest' }
+      responses:
+        '200':
+          description: The requested route is already active
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CollectionRouteChange' }
+        '201':
+          description: Result committed with audit
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CollectionRouteChange' }
+        '400': { $ref: '#/components/responses/Error' }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+        '409': { $ref: '#/components/responses/Error' }
+        '415': { $ref: '#/components/responses/Error' }
+        '503': { $ref: '#/components/responses/Error' }
+  /sandbox/ops/merchants/{merchant}/routes/{id}/approve:
+    servers: [{ url: / }]
+    post:
+      operationId: approvePlatformRoute
+      summary: Activate a previously submitted route as a platform operator
+      security: [{ PlatformSession: [] }]
+      description: Requires the platform operator role.
+      parameters:
+        - name: merchant
+          in: path
+          required: true
+          schema: { $ref: '#/components/schemas/Reference' }
+        - $ref: '#/components/parameters/WorkspaceControlID'
+      responses:
+        '200':
+          description: Result committed with audit
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CollectionRouteChange' }
+        '400': { $ref: '#/components/responses/Error' }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+        '409': { $ref: '#/components/responses/Error' }
+        '415': { $ref: '#/components/responses/Error' }
+        '503': { $ref: '#/components/responses/Error' }
+  /sandbox/ops/merchants/{merchant}/routes/{id}/cancel:
+    servers: [{ url: / }]
+    post:
+      operationId: cancelPlatformRoute
+      summary: Cancel a pending platform proposal
+      security: [{ PlatformSession: [] }]
+      description: Requires the platform operator role.
+      parameters:
+        - name: merchant
+          in: path
+          required: true
+          schema: { $ref: '#/components/schemas/Reference' }
+        - $ref: '#/components/parameters/WorkspaceControlID'
+      responses:
+        '200':
+          description: Result committed with audit
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CollectionRouteChange' }
+        '400': { $ref: '#/components/responses/Error' }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+        '409': { $ref: '#/components/responses/Error' }
+        '415': { $ref: '#/components/responses/Error' }
+        '503': { $ref: '#/components/responses/Error' }
+  /sandbox/ops/merchants/{merchant}/api-keys:
+    servers: [{ url: / }]
+    post:
+      operationId: issuePlatformKey
+      summary: Issue a merchant sandbox API key with a one-time secret
+      security: [{ PlatformSession: [] }]
+      description: Requires the platform operator role.
+      parameters:
+        - name: merchant
+          in: path
+          required: true
+          schema: { $ref: '#/components/schemas/Reference' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/WorkspaceAPIKeyRequest' }
+      responses:
+        '201':
+          description: Result committed with audit
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/IssuedWorkspaceAPIKey' }
+        '400': { $ref: '#/components/responses/Error' }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+        '409': { $ref: '#/components/responses/Error' }
+        '415': { $ref: '#/components/responses/Error' }
+        '503': { $ref: '#/components/responses/Error' }
+  /sandbox/ops/merchants/{merchant}/api-keys/{id}/revoke:
+    servers: [{ url: / }]
+    post:
+      operationId: revokePlatformKey
+      summary: Revoke a platform-issued key for this merchant
+      security: [{ PlatformSession: [] }]
+      description: Requires the platform operator role.
+      parameters:
+        - name: merchant
+          in: path
+          required: true
+          schema: { $ref: '#/components/schemas/Reference' }
+        - $ref: '#/components/parameters/WorkspaceControlID'
+      responses:
+        '200':
+          description: Result committed with audit
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/WorkspaceAPIKey' }
+        '400': { $ref: '#/components/responses/Error' }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+        '409': { $ref: '#/components/responses/Error' }
+        '415': { $ref: '#/components/responses/Error' }
+        '503': { $ref: '#/components/responses/Error' }
+  /sandbox/workspace/settlement/{account}/{currency}/totals:
+    servers:
+    - url: /
+    parameters:
+    - name: account
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Reference'
+    - name: currency
+      in: path
+      required: true
+      schema:
+        type: string
+        enum:
+        - USD
+        - BRL
+        - INR
+    get:
+      operationId: getSettlementTotals
+      summary: Read exact totals for one account and currency
+      security:
+      - WorkspaceSession: []
+      description: The period uses UTC calendar dates and is limited to 366 inclusive dates.
+      parameters:
+      - name: from
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date
+      - name: through
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date
+      responses:
+        '200':
+          description: Inclusive statement-date totals. Amounts are decimal integer strings.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SettlementTotals'
+        '400':
+          $ref: '#/components/responses/Error'
+        '401':
+          $ref: '#/components/responses/Error'
+        '404':
+          $ref: '#/components/responses/Error'
+        '429':
+          $ref: '#/components/responses/Error'
+        '503':
+          $ref: '#/components/responses/Error'
+  /sandbox/workspace/settlement/{account}/{currency}/batches:
+    servers:
+    - url: /
+    parameters:
+    - name: account
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Reference'
+    - name: currency
+      in: path
+      required: true
+      schema:
+        type: string
+        enum:
+        - USD
+        - BRL
+        - INR
+    get:
+      operationId: listSettlementBatches
+      summary: List settlement batches
+      security:
+      - WorkspaceSession: []
+      parameters:
+      - name: after
+        in: query
+        required: false
+        schema:
+          $ref: '#/components/schemas/Reference'
+      responses:
+        '200':
+          description: Page ordered by batch ID
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - data
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/SettlementBatch'
+                    maxItems: 100
+                  next_after:
+                    type: string
+        '400':
+          $ref: '#/components/responses/Error'
+        '401':
+          $ref: '#/components/responses/Error'
+        '404':
+          $ref: '#/components/responses/Error'
+        '429':
+          $ref: '#/components/responses/Error'
+        '503':
+          $ref: '#/components/responses/Error'
+    post:
+      operationId: importSettlementBatch
+      summary: Import a local mock statement as an immutable batch
+      security:
+      - WorkspaceSession: []
+      description: Operator or admin. Maximum 256 KiB and 500 rows. Within the account and currency, the same
+        batch ID with changed content, overlapping rows or repeated reversals returns 409.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SettlementStatement'
+      responses:
+        '201':
+          description: Imported
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SettlementImportResult'
+        '200':
+          description: Identical statement already imported
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SettlementImportResult'
+        '400':
+          $ref: '#/components/responses/Error'
+        '401':
+          $ref: '#/components/responses/Error'
+        '403':
+          $ref: '#/components/responses/Error'
+        '404':
+          $ref: '#/components/responses/Error'
+        '409':
+          $ref: '#/components/responses/Error'
+        '415':
+          $ref: '#/components/responses/Error'
+        '429':
+          $ref: '#/components/responses/Error'
+        '503':
+          $ref: '#/components/responses/Error'
+  /sandbox/workspace/settlement/{account}/{currency}/batches/{batch}:
+    servers:
+    - url: /
+    parameters:
+    - name: account
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Reference'
+    - name: currency
+      in: path
+      required: true
+      schema:
+        type: string
+        enum:
+        - USD
+        - BRL
+        - INR
+    - name: batch
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Reference'
+    get:
+      operationId: getSettlementBatch
+      summary: Read one batch and all its reconciliation entries
+      security:
+      - WorkspaceSession: []
+      responses:
+        '200':
+          description: Batch and entries
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SettlementBatchDetail'
+        '400':
+          $ref: '#/components/responses/Error'
+        '401':
+          $ref: '#/components/responses/Error'
+        '404':
+          $ref: '#/components/responses/Error'
+        '429':
+          $ref: '#/components/responses/Error'
+        '503':
+          $ref: '#/components/responses/Error'
+  /sandbox/workspace/settlement/{account}/{currency}/batches/{batch}/entries.csv:
+    servers:
+    - url: /
+    parameters:
+    - name: account
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Reference'
+    - name: currency
+      in: path
+      required: true
+      schema:
+        type: string
+        enum:
+        - USD
+        - BRL
+        - INR
+    - name: batch
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Reference'
+    get:
+      operationId: exportSettlementBatch
+      summary: Download all entries in one batch
+      security:
+      - WorkspaceSession: []
+      responses:
+        '200':
+          description: CSV with gross, fee, reported and calculated net, and match status
+          headers:
+            Content-Disposition:
+              schema:
+                type: string
+          content:
+            text/csv:
+              schema:
+                type: string
+        '400':
+          $ref: '#/components/responses/Error'
+        '401':
+          $ref: '#/components/responses/Error'
+        '404':
+          $ref: '#/components/responses/Error'
+        '429':
+          $ref: '#/components/responses/Error'
+        '503':
+          $ref: '#/components/responses/Error'
+  /sandbox/workspace/settlement/{account}/{currency}/orders/{kind}:
+    servers:
+    - url: /
+    parameters:
+    - name: account
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Reference'
+    - name: currency
+      in: path
+      required: true
+      schema:
+        type: string
+        enum:
+        - USD
+        - BRL
+        - INR
+    - name: kind
+      in: path
+      required: true
+      schema:
+        enum:
+        - collection
+        - refund
+        - payout
+    get:
+      operationId: listSettlementOrders
+      summary: Compare internal orders against imported entries
+      security:
+      - WorkspaceSession: []
+      parameters:
+      - name: after
+        in: query
+        required: false
+        schema:
+          $ref: '#/components/schemas/Reference'
+      responses:
+        '200':
+          description: Page ordered by order ID, including internal orders without an entry
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - data
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/SettlementOrder'
+                    maxItems: 100
+                  next_after:
+                    type: string
+        '400':
+          $ref: '#/components/responses/Error'
+        '401':
+          $ref: '#/components/responses/Error'
+        '404':
+          $ref: '#/components/responses/Error'
+        '429':
+          $ref: '#/components/responses/Error'
+        '503':
+          $ref: '#/components/responses/Error'
+  /sandbox/workspace/settlement/{account}/{currency}/orders/{kind}/report.csv:
+    servers:
+    - url: /
+    parameters:
+    - name: account
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Reference'
+    - name: currency
+      in: path
+      required: true
+      schema:
+        type: string
+        enum:
+        - USD
+        - BRL
+        - INR
+    - name: kind
+      in: path
+      required: true
+      schema:
+        enum:
+        - collection
+        - refund
+        - payout
+    get:
+      operationId: exportSettlementOrders
+      summary: Download a page of matched and unmatched orders
+      security:
+      - WorkspaceSession: []
+      parameters:
+      - name: after
+        in: query
+        required: false
+        schema:
+          $ref: '#/components/schemas/Reference'
+      responses:
+        '200':
+          description: Up to 100 orders with statement totals and expected gross
+          headers:
+            Content-Disposition:
+              schema:
+                type: string
+            X-Next-After:
+              description: Cursor for the following page, when available.
+              schema:
+                type: string
+          content:
+            text/csv:
+              schema:
+                type: string
+        '400':
+          $ref: '#/components/responses/Error'
+        '401':
+          $ref: '#/components/responses/Error'
+        '404':
+          $ref: '#/components/responses/Error'
+        '429':
+          $ref: '#/components/responses/Error'
+        '503':
+          $ref: '#/components/responses/Error'
+  /sandbox/workspace/settlement/{account}/{currency}/entries/{entry}/actions:
+    servers:
+    - url: /
+    parameters:
+    - name: account
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Reference'
+    - name: currency
+      in: path
+      required: true
+      schema:
+        type: string
+        enum:
+        - USD
+        - BRL
+        - INR
+    - name: entry
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Reference'
+    get:
+      operationId: listSettlementActions
+      summary: Read revision history for one entry
+      security:
+      - WorkspaceSession: []
+      parameters:
+      - name: after
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 0
+          maximum: 2147483647
+      responses:
+        '200':
+          description: Actions and their before-and-after checks
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - data
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/SettlementAction'
+                    maxItems: 100
+                  next_after:
+                    type: string
+        '400':
+          $ref: '#/components/responses/Error'
+        '401':
+          $ref: '#/components/responses/Error'
+        '404':
+          $ref: '#/components/responses/Error'
+        '429':
+          $ref: '#/components/responses/Error'
+        '503':
+          $ref: '#/components/responses/Error'
+    post:
+      operationId: recordSettlementAction
+      summary: Acknowledge, reopen or recheck a difference
+      security:
+      - WorkspaceSession: []
+      description: Operator or admin. Provide the current revision. Each accepted action adds a durable audit
+        entry.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SettlementActionInput'
+      responses:
+        '200':
+          description: Latest entry revision
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SettlementEntry'
+        '400':
+          $ref: '#/components/responses/Error'
+        '401':
+          $ref: '#/components/responses/Error'
+        '403':
+          $ref: '#/components/responses/Error'
+        '404':
+          $ref: '#/components/responses/Error'
+        '409':
+          $ref: '#/components/responses/Error'
+        '415':
+          $ref: '#/components/responses/Error'
+        '429':
+          $ref: '#/components/responses/Error'
+        '503':
+          $ref: '#/components/responses/Error'
+  /sandbox/workspace/setup:
+    servers: [{ url: / }]
+    get:
+      operationId: getWorkspaceCollectionSetup
+      security: [{ WorkspaceSession: [] }]
+      summary: Read enabled collection currencies and the latest order currency for the signed-in merchant
+      responses:
+        '200':
+          description: The latest order currency is null until the merchant has an order. Accounts reflect the routes available for new orders.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [recent_currency, open_currencies, effective_account_ids, sites]
+                properties:
+                  recent_currency: { type: [string, 'null'], enum: [USD, BRL, INR, null] }
+                  open_currencies: { type: array, uniqueItems: true, items: { type: string, enum: [USD, BRL, INR] } }
+                  sites: { type: array, items: { $ref: '#/components/schemas/SiteCard' } }
+                  effective_account_ids: { type: array, items: { $ref: '#/components/schemas/Reference' } }
+        '401': { $ref: '#/components/responses/Error' }
+        '503': { $ref: '#/components/responses/Error' }
+  /sandbox/workspace/settlement-summary:
+    servers: [{ url: / }]
+    get:
+      operationId: getWorkspaceSettlementSummary
+      security: [{ WorkspaceSession: [] }]
+      summary: Aggregate imported statement net by currency and settlement status for the signed-in merchant
+      description: Includes all recorded batches. An absent status has a null net. The latest settled statement date is the statement date.
+      responses:
+        '200':
+          description: One row per currency with imported statements.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  required: [currency, pending_net_minor, settled_net_minor, latest_settled_statement_date, statement_account_id]
+                  properties:
+                    currency: { type: string, enum: [USD, BRL, INR] }
+                    pending_net_minor: { type: [string, 'null'], pattern: '^-?[0-9]+$' }
+                    settled_net_minor: { type: [string, 'null'], pattern: '^-?[0-9]+$' }
+                    latest_settled_statement_date: { type: [string, 'null'], format: date }
+                    statement_account_id: { $ref: '#/components/schemas/Reference' }
+        '401': { $ref: '#/components/responses/Error' }
+        '429': { $ref: '#/components/responses/Error' }
+        '503': { $ref: '#/components/responses/Error' }
+  /sandbox/workspace/overview:
+    servers: [{ url: / }]
+    get:
+      operationId: getWorkspaceOverview
+      security: [{ WorkspaceSession: [] }]
+      summary: Read merchant-wide collection and settled statement totals for one currency
+      description: Collection totals use order creation date, and settled totals use statement date, inclusive in UTC.
+      parameters:
+        - name: currency
+          in: query
+          required: true
+          schema: { type: string, enum: [USD, BRL, INR] }
+        - name: days
+          in: query
+          required: true
+          schema: { type: integer, enum: [7, 30] }
+      responses:
+        '200':
+          description: Totals in currency minor units. Settlement amounts are null when no settled statements exist.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [orders, paid_orders, gross_minor, fees_minor, settled_net_minor]
+                properties:
+                  orders: { type: integer }
+                  paid_orders: { type: integer }
+                  gross_minor: { type: string }
+                  fees_minor: { type: [string, 'null'] }
+                  settled_net_minor: { type: [string, 'null'] }
+        '400': { $ref: '#/components/responses/Error' }
+        '401': { $ref: '#/components/responses/Error' }
+        '503': { $ref: '#/components/responses/Error' }
+  /sandbox/workspace/payments:
+    servers: [{ url: / }]
+    get:
+      operationId: listWorkspacePayments
+      security: [{ WorkspaceSession: [] }]
+      summary: List the signed-in merchant's payments without an API key
+      parameters:
+        - name: reference
+          in: query
+          description: Exact merchant reference or platform order ID.
+          schema: { type: string }
+        - name: recent
+          in: query
+          description: Send 1 to limit the list to six instead of 100.
+          schema: { type: string, enum: ['1'] }
+      responses:
+        '200':
+          description: Recent payments. Viewer sessions omit checkout links and actions.
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Payment' }
+        '401': { $ref: '#/components/responses/Error' }
+        '503': { $ref: '#/components/responses/Error' }
+  /sandbox/workspace/chargebacks:
+    servers: [{ url: / }]
+    get:
+      operationId: listSandboxChargebacks
+      security: [{ WorkspaceSession: [] }]
+      summary: List the latest 100 sandbox chargebacks belonging to the workspace merchant
+      responses:
+        '200':
+          description: Chargebacks ordered by most recent status change
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/SandboxChargeback' }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+        '503': { $ref: '#/components/responses/Error' }
+  /sandbox/workspace/chargebacks/{account}/{id}:
+    servers: [{ url: / }]
+    get:
+      operationId: getSandboxChargeback
+      security: [{ WorkspaceSession: [] }]
+      summary: Read an account-scoped chargeback, original order and callback history
+      parameters:
+        - name: account
+          in: path
+          required: true
+          schema: { $ref: '#/components/schemas/Reference' }
+        - name: id
+          in: path
+          required: true
+          schema: { $ref: '#/components/schemas/Reference' }
+      responses:
+        '200':
+          description: Sandbox chargeback, paid order summary and recorded events
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SandboxChargebackDetail' }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+        '503': { $ref: '#/components/responses/Error' }
+  /sandbox/channel-callbacks/{account}:
+    servers:
+      - url: /
+    post:
+      security: []
+      operationId: receiveSandboxChannelCallback
+      summary: Accept an authenticated, account-scoped mock channel event
+      description: >-
+        Chargeback events reference the original paid order in subject_id, use its original channel reference
+        and currency, and share an immutable amount and order per account and chargeback_id.
+        The first won or lost observation is final, including when it precedes opened.
+        Chargebacks record channel observations without posting funds or changing the payment.
+      parameters:
+        - name: account
+          in: path
+          required: true
+          schema: { $ref: '#/components/schemas/Reference' }
+        - name: FlowXPay-Timestamp
+          in: header
+          required: true
+          schema: { type: string, pattern: '^[0-9]+$' }
+        - name: FlowXPay-Signature
+          in: header
+          required: true
+          schema: { type: string, pattern: '^[a-fA-F0-9]{64}$' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [event_id, kind, subject_id, channel_reference, status, currency, amount_minor]
+              properties:
+                event_id: { $ref: '#/components/schemas/Reference' }
+                kind: { enum: [payment, refund, payout, chargeback] }
+                chargeback_id: { $ref: '#/components/schemas/Reference' }
+                subject_id: { $ref: '#/components/schemas/Reference' }
+                channel_reference: { $ref: '#/components/schemas/Reference' }
+                status: { type: string }
+                currency: { enum: [USD, BRL, INR] }
+                amount_minor: { type: integer, minimum: 1 }
+                transfer_reference:
+                  $ref: '#/components/schemas/Reference'
+              allOf:
+                - if:
+                    properties:
+                      kind: { const: payout }
+                      status: { const: succeeded }
+                  then:
+                    required: [transfer_reference]
+                  else:
+                    properties:
+                      transfer_reference: false
+                - if:
+                    properties:
+                      kind: { const: chargeback }
+                  then:
+                    required: [chargeback_id]
+                    properties:
+                      status: { $ref: '#/components/schemas/SandboxChargebackStatus' }
+                  else:
+                    properties:
+                      chargeback_id: false
+                      status: { enum: [pending, succeeded, failed] }
+      responses:
+        '200':
+          description: Committed processing result
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [outcome]
+                properties:
+                  outcome: { enum: [applied, ignored, duplicate, terminal_conflict] }
+        '400': { $ref: '#/components/responses/Error' }
+        '401': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+        '409': { $ref: '#/components/responses/Error' }
+        '415': { $ref: '#/components/responses/Error' }
+        '503': { $ref: '#/components/responses/Error' }
+webhooks:
+  terminalBusinessEvent:
+    post:
+      security: []
+      summary: Deliver a terminal payment, refund or payout event to an allowed local mock receiver
+      parameters:
+        - name: FlowXPay-Event-ID
+          in: header
+          required: true
+          schema: { type: string }
+        - name: FlowXPay-Timestamp
+          in: header
+          required: true
+          schema: { type: string }
+        - name: FlowXPay-Signature
+          in: header
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: '#/components/schemas/CollectionEvent'
+                - $ref: '#/components/schemas/PayoutEvent'
+      responses:
+        '2XX':
+          description: Receipt acknowledged. Deduplicate using the event ID.
+components:
+  securitySchemes:
+    PlatformSession:
+      type: http
+      scheme: bearer
+      description: Independent local sandbox platform session issued by /sandbox/ops/login.
+    SandboxKey:
+      type: http
+      scheme: bearer
+      description: >-
+        Send the managed sandbox API key in Authorization as a Bearer credential.
+        The API derives the merchant from the key. Enrolled sandbox merchants also sign payment creation and refunds.
+        The original sandbox environment key remains valid until explicitly retired.
+    WorkspaceSession:
+      type: http
+      scheme: bearer
+      description: Active sandbox member session, subject to current membership role and MFA policy.
+  parameters:
+    OnboardingIdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      schema: { $ref: '#/components/schemas/Reference' }
+      description: Keep the same key and input for retries. Different input with the same key conflicts.
+    WorkspaceControlID:
+      name: id
+      in: path
+      required: true
+      schema: { $ref: '#/components/schemas/Reference' }
+    PayoutIdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      schema: { $ref: '#/components/schemas/Reference' }
+      description: Reuse the same key with the same input when retrying.
+    PayoutID:
+      name: id
+      in: path
+      required: true
+      schema: { $ref: '#/components/schemas/Reference' }
+  responses:
+    Payout:
+      description: Current sandbox payout
+      headers:
+        Location:
+          description: Payout resource URI, returned for draft creation and identical replay.
+          schema: { type: string }
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Payout' }
+    PayoutRecipient:
+      description: Current masked sandbox recipient
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/PayoutRecipient' }
+    Error:
+      description: Stable machine-readable API error
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+  schemas:
+    SandboxChargebackStatus:
+      enum: [opened, won, lost]
+    SandboxChargeback:
+      type: object
+      required: [id, account_id, payment_id, merchant_reference, status, currency, amount_minor, created_at, updated_at]
+      properties:
+        id: { $ref: '#/components/schemas/Reference' }
+        account_id: { $ref: '#/components/schemas/Reference' }
+        payment_id: { $ref: '#/components/schemas/Reference' }
+        merchant_reference: { $ref: '#/components/schemas/Reference' }
+        status: { $ref: '#/components/schemas/SandboxChargebackStatus' }
+        currency: { enum: [USD, BRL, INR] }
+        amount_minor: { type: integer, minimum: 1, maximum: 999999999999 }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+    SandboxChargebackDetail:
+      allOf:
+        - $ref: '#/components/schemas/SandboxChargeback'
+        - type: object
+          required: [payment, history]
+          properties:
+            payment:
+              type: object
+              required: [status, amount_minor, paid_at, channel_reference]
+              properties:
+                status: { const: succeeded }
+                amount_minor: { type: integer, minimum: 1, maximum: 999999999999 }
+                paid_at: { type: string, format: date-time }
+                channel_reference: { $ref: '#/components/schemas/Reference' }
+            history:
+              type: array
+              minItems: 1
+              items:
+                type: object
+                required: [event_id, status, outcome, received_at, replay_conflict_at]
+                properties:
+                  event_id: { $ref: '#/components/schemas/Reference' }
+                  status: { $ref: '#/components/schemas/SandboxChargebackStatus' }
+                  outcome: { enum: [applied, ignored, terminal_conflict] }
+                  received_at: { type: string, format: date-time }
+                  replay_conflict_at: { type: [string, 'null'], format: date-time }
+    SettlementStatementRow:
+      type: object
+      required:
+      - id
+      - kind
+      - channel_reference
+      - gross_minor
+      - fee_minor
+      - net_minor
+      properties:
+        id:
+          $ref: '#/components/schemas/Reference'
+        kind:
+          enum:
+          - collection
+          - refund
+          - payout
+          - reversal
+        channel_reference:
+          $ref: '#/components/schemas/Reference'
+        reverses_entry:
+          $ref: '#/components/schemas/Reference'
+        gross_minor:
+          type: integer
+          minimum: -999999999999
+          maximum: 999999999999
+        fee_minor:
+          type: integer
+          minimum: -999999999999
+          maximum: 999999999999
+        net_minor:
+          type: integer
+          minimum: -999999999999
+          maximum: 999999999999
+      additionalProperties: false
+    SettlementStatement:
+      type: object
+      required:
+      - id
+      - statement_date
+      - settlement_status
+      - withdrawal_status
+      - entries
+      properties:
+        id:
+          $ref: '#/components/schemas/Reference'
+        statement_date:
+          type: string
+          format: date
+        settlement_status:
+          enum:
+          - pending
+          - settled
+        withdrawal_status:
+          enum:
+          - not_reported
+          - pending
+          - completed
+          - failed
+        withdrawal_reference:
+          type: string
+          pattern: ^([a-zA-Z0-9._:-]{1,80})?$
+        entries:
+          type: array
+          minItems: 1
+          maxItems: 500
+          items:
+            $ref: '#/components/schemas/SettlementStatementRow'
+      additionalProperties: false
+      if:
+        properties:
+          withdrawal_status: { const: not_reported }
+      then:
+        properties:
+          withdrawal_reference: { const: '' }
+      else:
+        required: [withdrawal_reference]
+        properties:
+          withdrawal_reference: { minLength: 1 }
+    SettlementImportResult:
+      type: object
+      required:
+      - id
+      - replayed
+      properties:
+        id:
+          $ref: '#/components/schemas/Reference'
+        replayed:
+          type: boolean
+    SettlementBatch:
+      type: object
+      required:
+      - id
+      - statement_date
+      - settlement_status
+      - withdrawal_status
+      - account_id
+      - currency
+      - imported_by
+      - imported_at
+      - row_count
+      - gross_minor
+      - fee_minor
+      - net_minor
+      - calculated_net_minor
+      properties:
+        id:
+          $ref: '#/components/schemas/Reference'
+        statement_date:
+          type: string
+          format: date
+        settlement_status:
+          enum:
+          - pending
+          - settled
+        withdrawal_status:
+          enum:
+          - not_reported
+          - pending
+          - completed
+          - failed
+        withdrawal_reference:
+          type: string
+          pattern: ^([a-zA-Z0-9._:-]{1,80})?$
+        account_id:
+          $ref: '#/components/schemas/Reference'
+        currency:
+          type: string
+          enum:
+          - USD
+          - BRL
+          - INR
+        imported_by:
+          type: string
+        imported_at:
+          type: string
+          format: date-time
+        row_count:
+          type: integer
+          minimum: 1
+          maximum: 500
+        gross_minor:
+          type: integer
+          format: int64
+        fee_minor:
+          type: integer
+          format: int64
+        net_minor:
+          type: integer
+          format: int64
+        calculated_net_minor:
+          type: integer
+          format: int64
+    SettlementEntry:
+      type: object
+      required:
+      - id
+      - kind
+      - channel_reference
+      - gross_minor
+      - fee_minor
+      - net_minor
+      - calculated_net_minor
+      - match_status
+      - difference_status
+      - acknowledged
+      - revision
+      properties:
+        id:
+          $ref: '#/components/schemas/Reference'
+        kind:
+          enum:
+          - collection
+          - refund
+          - payout
+          - reversal
+        channel_reference:
+          $ref: '#/components/schemas/Reference'
+        reverses_entry:
+          $ref: '#/components/schemas/Reference'
+        gross_minor:
+          type: integer
+          minimum: -999999999999
+          maximum: 999999999999
+        fee_minor:
+          type: integer
+          minimum: -999999999999
+          maximum: 999999999999
+        net_minor:
+          type: integer
+          minimum: -999999999999
+          maximum: 999999999999
+        calculated_net_minor:
+          type: integer
+          format: int64
+        order_id:
+          type: string
+        order_status:
+          type: string
+        expected_gross_minor:
+          type: integer
+          format: int64
+        match_status:
+          enum:
+          - matched
+          - missing
+          - ambiguous
+          - amount_mismatch
+          - status_mismatch
+        difference_status:
+          enum:
+          - matched
+          - open
+          - acknowledged
+        acknowledged:
+          type: boolean
+        revision:
+          type: integer
+          minimum: 0
+    SettlementBatchDetail:
+      allOf:
+      - $ref: '#/components/schemas/SettlementBatch'
+      - type: object
+        required:
+        - entries
+        properties:
+          entries:
+            type: array
+            maxItems: 500
+            items:
+              $ref: '#/components/schemas/SettlementEntry'
+    SettlementTotals:
+      type: object
+      required:
+      - account_id
+      - currency
+      - from
+      - through
+      - batch_count
+      - row_count
+      - gross_minor
+      - fee_minor
+      - net_minor
+      - calculated_net_minor
+      properties:
+        account_id:
+          $ref: '#/components/schemas/Reference'
+        currency:
+          type: string
+          enum:
+          - USD
+          - BRL
+          - INR
+        from:
+          type: string
+          format: date
+        through:
+          type: string
+          format: date
+        batch_count:
+          type: integer
+          format: int64
+        row_count:
+          type: integer
+          format: int64
+        gross_minor:
+          type: string
+          pattern: ^-?[0-9]+$
+        fee_minor:
+          type: string
+          pattern: ^-?[0-9]+$
+        net_minor:
+          type: string
+          pattern: ^-?[0-9]+$
+        calculated_net_minor:
+          type: string
+          pattern: ^-?[0-9]+$
+    SettlementOrder:
+      type: object
+      required:
+      - id
+      - status
+      - expected_gross_minor
+      - entry_count
+      - gross_minor
+      - fee_minor
+      - net_minor
+      - calculated_net_minor
+      properties:
+        id:
+          type: string
+        channel_reference:
+          type: string
+        status:
+          type: string
+        expected_gross_minor:
+          type: integer
+          format: int64
+        entry_count:
+          type: integer
+          format: int64
+        gross_minor:
+          type: integer
+          format: int64
+        fee_minor:
+          type: integer
+          format: int64
+        net_minor:
+          type: integer
+          format: int64
+        calculated_net_minor:
+          type: integer
+          format: int64
+    SettlementActionInput:
+      type: object
+      required:
+      - action
+      - note
+      - expected_revision
+      properties:
+        action:
+          enum:
+          - acknowledge
+          - reopen
+          - recheck
+        note:
+          type: string
+          minLength: 1
+          maxLength: 300
+        expected_revision:
+          type: integer
+          minimum: 0
+          maximum: 2147483646
+      additionalProperties: false
+    SettlementAction:
+      type: object
+      required:
+      - revision
+      - member_id
+      - action
+      - note
+      - before_check
+      - after_check
+      - created_at
+      properties:
+        revision:
+          type: integer
+          minimum: 1
+        member_id:
+          type: string
+        action:
+          enum:
+          - acknowledge
+          - reopen
+          - recheck
+        note:
+          type: string
+          minLength: 1
+          maxLength: 300
+        before_check:
+          $ref: '#/components/schemas/SettlementEntry'
+        after_check:
+          $ref: '#/components/schemas/SettlementEntry'
+        created_at:
+          type: string
+          format: date-time
+    PayoutRecipientType:
+      enum: [bank_account, pix, upi]
+    PayoutRecipient:
+      type: object
+      required: [id, type, masked_destination]
+      properties:
+        id: { type: string }
+        type: { $ref: '#/components/schemas/PayoutRecipientType' }
+        masked_destination: { type: string, example: '•••• 0427' }
+    PayoutAccount:
+      type: object
+      required: [account_id, site_id, provider, currency, recipient_type, available_minor, reserved_minor, max_payout_minor, enabled]
+      properties:
+        account_id: { type: string }
+        site_id: { type: string }
+        provider: { enum: [mock_card, mock_pix, mock_in_redirect] }
+        currency: { enum: [USD, BRL, INR] }
+        recipient_type: { $ref: '#/components/schemas/PayoutRecipientType' }
+        available_minor: { type: integer, minimum: 0 }
+        reserved_minor: { type: integer, minimum: 0 }
+        max_payout_minor: { type: integer, minimum: 1, maximum: 999999999999 }
+        enabled: { type: boolean }
+    FeeDirection:
+      enum: [collection, payout]
+    FeeCurrency:
+      enum: [BRL, USD, INR]
+    PricingAmount:
+      type: integer
+      minimum: 0
+      maximum: 999999999999
+    FeeVersion:
+      type: object
+      required: [bps, fixed_minor, version_id, source, effective_at]
+      properties:
+        bps: { type: integer, minimum: 0, maximum: 10000 }
+        fixed_minor: { $ref: '#/components/schemas/PricingAmount' }
+        version_id: { type: string, pattern: '^[0-9]+$' }
+        source: { enum: [cost, default, override] }
+        effective_at: { type: string, format: date-time }
+    MerchantFeeVersion:
+      allOf:
+        - $ref: '#/components/schemas/FeeVersion'
+        - properties:
+            source: { enum: [default, override] }
+    OrderFee:
+      allOf:
+        - $ref: '#/components/schemas/FeeVersion'
+        - type: object
+          required: [fee_minor]
+          properties:
+            fee_minor: { type: integer, minimum: 0, maximum: 1999999999998 }
+    MerchantOrderFee:
+      allOf:
+        - $ref: '#/components/schemas/OrderFee'
+        - $ref: '#/components/schemas/MerchantFeeVersion'
+    PublishChannelPrice:
+      type: object
+      additionalProperties: false
+      required: [direction, currency, kind]
+      properties:
+        direction: { $ref: '#/components/schemas/FeeDirection' }
+        currency: { $ref: '#/components/schemas/FeeCurrency' }
+        kind: { enum: [cost, default, override] }
+        bps: { type: integer, minimum: 0, maximum: 10000 }
+        fixed_minor: { $ref: '#/components/schemas/PricingAmount' }
+        restore_default: { type: boolean }
+      if:
+        required: [restore_default]
+        properties:
+          restore_default: { const: true }
+      then:
+        properties:
+          kind: { const: override }
+          bps: false
+          fixed_minor: false
+      else:
+        required: [bps, fixed_minor]
+    PublishedPrice:
+      type: object
+      required: [direction, currency, kind, version_id, effective_at, restore_default]
+      properties:
+        direction: { $ref: '#/components/schemas/FeeDirection' }
+        currency: { $ref: '#/components/schemas/FeeCurrency' }
+        kind: { enum: [cost, default, override] }
+        version_id: { type: string, pattern: '^[0-9]+$' }
+        effective_at: { type: string, format: date-time }
+        restore_default: { type: boolean }
+    ChannelPrices:
+      type: array
+      items:
+        type: object
+        required: [channel_id, direction, currency, default, override]
+        properties:
+          channel_id: { $ref: '#/components/schemas/Reference' }
+          direction: { $ref: '#/components/schemas/FeeDirection' }
+          currency: { $ref: '#/components/schemas/FeeCurrency' }
+          cost: { $ref: '#/components/schemas/FeeVersion' }
+          default: { anyOf: [{ $ref: '#/components/schemas/MerchantFeeVersion' }, { type: 'null' }] }
+          override: { anyOf: [{ $ref: '#/components/schemas/MerchantFeeVersion' }, { type: 'null' }] }
+    MerchantChannelQuotes:
+      type: array
+      items:
+        type: object
+        additionalProperties: false
+        required: [account_id, site_id, provider, direction, currency, quote]
+        properties:
+          account_id: { $ref: '#/components/schemas/Reference' }
+          site_id: { $ref: '#/components/schemas/Reference' }
+          channel_id: { $ref: '#/components/schemas/Reference' }
+          name: { type: string }
+          provider: { type: string }
+          direction: { $ref: '#/components/schemas/FeeDirection' }
+          currency: { $ref: '#/components/schemas/FeeCurrency' }
+          quote: { anyOf: [{ $ref: '#/components/schemas/MerchantFeeVersion' }, { type: 'null' }] }
+    ConfirmCollectionSwitch:
+      type: object
+      additionalProperties: false
+      required: [preview]
+      properties:
+        preview: { type: string, pattern: '^[0-9a-f]{64}$' }
+    CollectionSwitchChannel:
+      type: object
+      required: [provider, available, quote]
+      properties:
+        channel_id: { $ref: '#/components/schemas/Reference' }
+        account_id: { $ref: '#/components/schemas/Reference' }
+        name: { type: string }
+        provider: { type: string }
+        available: { type: boolean }
+        cost: { $ref: '#/components/schemas/FeeVersion' }
+        quote: { anyOf: [{ $ref: '#/components/schemas/MerchantFeeVersion' }, { type: 'null' }] }
+    CollectionSwitchPreview:
+      allOf:
+        - $ref: '#/components/schemas/Capability'
+        - type: object
+          required: [merchant_id, site_id, current, target, preview]
+          properties:
+            merchant_id: { $ref: '#/components/schemas/Reference' }
+            site_id: { $ref: '#/components/schemas/Reference' }
+            current_route_id: { $ref: '#/components/schemas/Reference' }
+            current: { anyOf: [{ $ref: '#/components/schemas/CollectionSwitchChannel' }, { type: 'null' }] }
+            target: { $ref: '#/components/schemas/CollectionSwitchChannel' }
+            preview: { type: string, pattern: '^(|[0-9a-f]{64})$' }
+    PlatformOrderFees:
+      type: array
+      items:
+        type: object
+        required: [id, status, site_id, account_id, direction, currency, amount_minor, created_at, quote, statement_fee_minor, statement_net_minor, statement_status]
+        properties:
+          id: { $ref: '#/components/schemas/Reference' }
+          status: { type: string }
+          site_id: { type: string }
+          account_id: { type: string }
+          channel_id: { $ref: '#/components/schemas/Reference' }
+          direction: { $ref: '#/components/schemas/FeeDirection' }
+          currency: { $ref: '#/components/schemas/FeeCurrency' }
+          amount_minor: { $ref: '#/components/schemas/PricingAmount' }
+          created_at: { type: string, format: date-time }
+          quote: { anyOf: [{ $ref: '#/components/schemas/MerchantOrderFee' }, { type: 'null' }] }
+          cost: { $ref: '#/components/schemas/OrderFee' }
+          estimated_margin_minor: { type: integer }
+          statement_fee_minor: { type: [integer, 'null'] }
+          statement_net_minor: { type: [integer, 'null'] }
+          statement_batch_id: { $ref: '#/components/schemas/Reference' }
+          statement_status: { enum: [missing, reversal_reported, unmatched, pending, matched_settled] }
+    PayoutRequest:
+      type: object
+      required: [merchant_reference, account_id, recipient_id, currency, amount_minor]
+      properties:
+        merchant_reference: { $ref: '#/components/schemas/Reference' }
+        account_id: { $ref: '#/components/schemas/Reference' }
+        recipient_id: { $ref: '#/components/schemas/Reference' }
+        currency: { enum: [USD, BRL, INR] }
+        amount_minor: { type: integer, minimum: 1, maximum: 999999999999 }
+    Payout:
+      allOf:
+        - $ref: '#/components/schemas/PayoutRequest'
+        - type: object
+          required: [id, recipient_type, status, created_by, channel_reference, created_at, updated_at]
+          properties:
+            id: { type: string }
+            recipient_type: { $ref: '#/components/schemas/PayoutRecipientType' }
+            status: { enum: [draft, processing, pending_confirmation, succeeded, failed, rejected] }
+            created_by: { type: string }
+            reviewed_by: { type: string }
+            reviewed_at: { type: string, format: date-time }
+            channel_reference: { type: string, description: Reserved mock channel reference for the original account. }
+            transfer_reference: { type: string, description: Simulated UTR or transfer reference on success. }
+            failure_code: { enum: [review_rejected, channel_rejected, payout_account_disabled, payout_rate_limited, payout_daily_limit_exceeded] }
+            created_at: { type: string, format: date-time }
+            updated_at: { type: string, format: date-time }
+            quote: { anyOf: [{ $ref: '#/components/schemas/MerchantOrderFee' }, { type: 'null' }] }
+            platform_channel_id: { $ref: '#/components/schemas/Reference' }
+    PayoutEvent:
+      type: object
+      required: [id, type, payout_id, account_id, status, currency, amount_minor, occurred_at]
+      properties:
+        id: { type: string }
+        type: { enum: [payout.succeeded, payout.failed, payout.rejected] }
+        payout_id: { type: string }
+        account_id: { type: string }
+        status: { enum: [succeeded, failed, rejected] }
+        amount_minor: { type: integer, minimum: 1 }
+        currency: { enum: [USD, BRL, INR] }
+        transfer_reference: { type: string }
+        occurred_at: { type: string, format: date-time }
+    Refund:
+      type: object
+      required: [id, payment_id, currency, amount_minor, status, created_at, updated_at]
+      properties:
+        id: { type: string }
+        payment_id: { type: string }
+        currency: { enum: [USD, BRL, INR] }
+        amount_minor: { type: integer, minimum: 1, maximum: 999999999999 }
+        status: { enum: [pending_confirmation, succeeded, failed] }
+        failure_code: { enum: [channel_confirmation_pending, channel_rejected, channel_rate_limited] }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+    CollectionException:
+      type: object
+      required: [kind, payment_id, subject_id, at]
+      properties:
+        kind: { enum: [terminal_conflict, replay_conflict, webhook_failed, payment_confirmation_pending, refund_confirmation_pending] }
+        payment_id: { type: string }
+        subject_id: { type: string }
+        event_id: { type: string }
+        at: { type: string, format: date-time }
+    CollectionEvent:
+      type: object
+      required: [id, type, payment_id, status, currency, amount_minor, occurred_at]
+      properties:
+        id: { type: string }
+        type: { enum: [payment.succeeded, payment.failed, refund.succeeded, refund.failed] }
+        payment_id: { type: string }
+        refund_id: { type: string }
+        status: { enum: [succeeded, failed] }
+        currency: { enum: [USD, BRL, INR] }
+        amount_minor: { type: integer, minimum: 1 }
+        occurred_at: { type: string, format: date-time }
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code: { type: string }
+            message: { type: string }
+    Reference:
+      type: string
+      pattern: '^[a-zA-Z0-9._:-]{1,80}$'
+    Capability:
+      type: object
+      required: [market, currency, method]
+      properties:
+        market: { enum: [BR, US, IN] }
+        currency: { enum: [BRL, USD, INR] }
+        method: { enum: [pix, card, gateway] }
+      oneOf:
+        - properties:
+            market: { const: BR }
+            currency: { const: BRL }
+            method: { const: pix }
+        - properties:
+            market: { const: US }
+            currency: { const: USD }
+            method: { const: card }
+        - properties:
+            market: { const: IN }
+            currency: { const: INR }
+            method: { const: gateway }
+    SiteCapability:
+      type: object
+      required: [id, name, default, payments, accounts]
+      properties:
+        id: { $ref: '#/components/schemas/Reference' }
+        name: { type: string }
+        default: { type: boolean }
+        payments:
+          type: array
+          items: { $ref: '#/components/schemas/Capability' }
+        accounts:
+          type: array
+          items:
+            allOf:
+              - $ref: '#/components/schemas/Capability'
+              - type: object
+                required: [account_id, enabled, provider, requests_per_second, next_action_type]
+                properties:
+                  account_id: { $ref: '#/components/schemas/Reference' }
+                  enabled: { type: boolean }
+                  provider: { $ref: '#/components/schemas/MockProvider' }
+                  requests_per_second: { type: integer, minimum: 1, maximum: 1000 }
+                  next_action_type: { enum: [redirect, display_qr, unsupported] }
+    MockProvider:
+      enum: [mock_card, mock_pix, mock_in_redirect, mock_in_qr, mock_in_unknown]
+    WorkspaceAPIKeyRequest:
+      type: object
+      additionalProperties: false
+      required: [label]
+      properties:
+        label: { type: string, minLength: 1, maxLength: 100 }
+    WorkspaceAPIKey:
+      type: object
+      required: [id, label, legacy, platform]
+      properties:
+        id: { $ref: '#/components/schemas/Reference' }
+        label: { type: string }
+        legacy: { type: boolean }
+        platform: { type: boolean }
+        created_at: { type: string, format: date-time }
+        created_by: { type: string }
+        replaces_id: { $ref: '#/components/schemas/Reference' }
+        revoked_at: { type: string, format: date-time }
+        revoked_by: { type: string }
+    IssuedWorkspaceAPIKey:
+      allOf:
+        - $ref: '#/components/schemas/WorkspaceAPIKey'
+        - type: object
+          required: [secret]
+          properties:
+            secret: { type: string, pattern: '^fxk_[a-f0-9]{64}$' }
+    CollectionRouteChangeRequest:
+      type: object
+      additionalProperties: false
+      required: [site_id, account_id]
+      properties:
+        site_id: { $ref: '#/components/schemas/Reference' }
+        account_id: { $ref: '#/components/schemas/Reference' }
+        activate: { type: boolean, default: false }
+    CollectionRouteChange:
+      allOf:
+        - $ref: '#/components/schemas/Capability'
+        - type: object
+          required: [id, site_id, account_id, submitted_at, submitted_by, platform]
+          properties:
+            id: { $ref: '#/components/schemas/Reference' }
+            site_id: { $ref: '#/components/schemas/Reference' }
+            account_id: { $ref: '#/components/schemas/Reference' }
+            submitted_at: { type: string, format: date-time }
+            submitted_by: { type: string }
+            approved_at: { type: string, format: date-time }
+            approved_by: { type: string }
+            superseded_at: { type: string, format: date-time }
+            cancelled_at: { type: string, format: date-time }
+            platform: { type: boolean }
+    PlatformChannelStatus:
+      type: object
+      additionalProperties: false
+      required: [enabled]
+      properties:
+        enabled: { type: boolean }
+    PlatformChannelInput:
+      type: object
+      additionalProperties: false
+      required: [provider, enabled]
+      dependentRequired: { id: [name] }
+      properties:
+        id: { $ref: '#/components/schemas/Reference' }
+        name: { type: string, maxLength: 100 }
+        provider: { $ref: '#/components/schemas/MockProvider' }
+        enabled: { type: boolean }
+    PlatformChannel:
+      allOf:
+        - $ref: '#/components/schemas/Capability'
+        - type: object
+          required: [id, name, provider, enabled]
+          properties:
+            id: { $ref: '#/components/schemas/Reference' }
+            name: { type: string }
+            provider: { $ref: '#/components/schemas/MockProvider' }
+            enabled: { type: boolean }
+    PlatformAssignmentInput:
+      type: object
+      additionalProperties: false
+      required: [site_id, channel_id]
+      properties:
+        site_id: { $ref: '#/components/schemas/Reference' }
+        channel_id: { $ref: '#/components/schemas/Reference' }
+    PlatformAssignment:
+      type: object
+      required: [id, site_id, provider, enabled, environment, routing_standby]
+      properties:
+        id: { $ref: '#/components/schemas/Reference' }
+        site_id: { $ref: '#/components/schemas/Reference' }
+        platform_channel_id: { $ref: '#/components/schemas/Reference' }
+        platform_channel_name: { type: string }
+        provider: { $ref: '#/components/schemas/MockProvider' }
+        enabled: { type: boolean }
+        environment: { const: sandbox }
+        routing_standby: { type: boolean }
+    PlatformAudit:
+      type: object
+      required: [id, occurred_at, actor, action, merchant_id, resource_id, details]
+      properties:
+        id: { type: integer }
+        occurred_at: { type: string, format: date-time }
+        actor: { type: string }
+        action: { type: string }
+        merchant_id: { type: [string, 'null'] }
+        resource_id: { type: string }
+        details: { type: object }
+        account_id: { $ref: '#/components/schemas/Reference' }
+        platform_channel_id: { $ref: '#/components/schemas/Reference' }
+        platform_channel_name: { type: string }
+        provider: { $ref: '#/components/schemas/MockProvider' }
+    PlatformMerchant:
+      type: object
+      required: [id, name, sites, accounts]
+      properties:
+        id: { $ref: '#/components/schemas/Reference' }
+        name: { type: string }
+        sites: { type: integer, minimum: 0 }
+        accounts: { type: integer, minimum: 0 }
+    PlatformMerchantPage:
+      type: object
+      additionalProperties: false
+      required: [merchants]
+      properties:
+        next_after: { $ref: '#/components/schemas/Reference' }
+        merchants:
+          type: array
+          maxItems: 100
+          items: { $ref: '#/components/schemas/PlatformMerchant' }
+    PlatformTaskKind:
+      type: string
+      enum: [assignment, blocked, pending, can_approve]
+    PlatformTaskGroup:
+      type: object
+      required: [kind, total, items]
+      properties:
+        kind: { $ref: '#/components/schemas/PlatformTaskKind' }
+        total: { type: integer, minimum: 1 }
+        items:
+          type: array
+          maxItems: 10
+          items:
+            type: object
+            required: [kind, merchant_id, merchant_name, site_id, site_name]
+            properties:
+              kind: { $ref: '#/components/schemas/PlatformTaskKind' }
+              merchant_id: { $ref: '#/components/schemas/Reference' }
+              merchant_name: { type: string }
+              site_id: { $ref: '#/components/schemas/Reference' }
+              site_name: { type: string }
+              route_id: { $ref: '#/components/schemas/Reference' }
+              currency: { type: string }
+              method: { type: string }
+    PlatformOnboardingInput:
+      type: object
+      additionalProperties: false
+      required: [name, admin_email]
+      properties:
+        name: { type: string, minLength: 1, maxLength: 100 }
+        site_name: { type: string, maxLength: 100, description: Defaults to the normalized merchant name. }
+        admin_name: { type: string, maxLength: 100, description: Defaults to the normalized email local part truncated to 100 characters. }
+        admin_email: { type: string, format: email, maxLength: 254 }
+    PlatformOnboarding:
+      type: object
+      required: [merchant_id, site_id, invite_version, invite_status, expires_at]
+      properties:
+        merchant_id: { $ref: '#/components/schemas/Reference' }
+        site_id: { $ref: '#/components/schemas/Reference' }
+        invite_version: { type: integer, minimum: 1 }
+        invite_status: { type: string, enum: [pending, expired, accepted] }
+        expires_at: { type: string, format: date-time }
+    IssuedPlatformOnboarding:
+      allOf:
+        - $ref: '#/components/schemas/IssuedPlatformAdminInvitation'
+        - type: object
+          required: [api_key]
+          properties:
+            api_key: { $ref: '#/components/schemas/IssuedWorkspaceAPIKey' }
+    IssuedPlatformAdminInvitation:
+      allOf:
+        - $ref: '#/components/schemas/PlatformOnboarding'
+        - type: object
+          required: [invite_path]
+          properties:
+            invite_path:
+              type: string
+              pattern: '^/invite#fxi_[a-f0-9]{64}$'
+    UpstreamIntegration:
+      type: object
+      required: [id, name, market, currency, collections, payouts, validation_status]
+      properties:
+        id: { $ref: '#/components/schemas/Reference' }
+        name: { type: string }
+        market: { type: string, pattern: '^[A-Z]{2}$' }
+        currency: { type: string, pattern: '^[A-Z]{3}$' }
+        collections: { type: boolean }
+        payouts: { type: boolean }
+        validation_status: { type: string, enum: [pending_verification, signature_rejected] }
+    PlatformFinance:
+      type: object
+      required: [from, to, summary, payouts, settlements]
+      properties:
+        from: { type: string, format: date }
+        to: { type: string, format: date }
+        summary:
+          type: array
+          items:
+            type: object
+            required: [currency, direction, orders, succeeded, in_progress, successful_minor]
+            properties:
+              currency: { type: string }
+              direction: { enum: [collection, payout] }
+              orders: { type: integer }
+              succeeded: { type: integer }
+              in_progress: { type: integer }
+              successful_minor: { type: string, pattern: '^[0-9]+$' }
+              priced: { type: integer, description: Successful orders with both prices available. }
+              estimated_revenue_minor: { type: string }
+              estimated_cost_minor: { type: string }
+              estimated_margin_minor: { type: string }
+        payouts:
+          type: array
+          maxItems: 100
+          items:
+            type: object
+            required: [id, merchant_id, merchant, merchant_reference, currency, amount_minor, status, created_at]
+            properties:
+              id: { type: string }
+              merchant_id: { type: string }
+              merchant: { type: string }
+              merchant_reference: { type: string }
+              currency: { type: string }
+              amount_minor: { type: string }
+              status: { enum: [draft, processing, pending_confirmation, succeeded, failed, rejected] }
+              created_at: { type: string, format: date-time }
+        settlements:
+          type: array
+          maxItems: 100
+          items:
+            type: object
+            required: [id, merchant_id, merchant, account_id, currency, statement_date, settlement, withdrawal, statement_gross_minor, statement_fee_minor, statement_net_minor, rows, differences]
+            properties:
+              id: { type: string }
+              merchant_id: { type: string }
+              merchant: { type: string }
+              account_id: { type: string }
+              currency: { type: string }
+              statement_date: { type: string, format: date }
+              settlement: { enum: [pending, settled] }
+              withdrawal: { enum: [not_reported, pending, completed, failed] }
+              statement_gross_minor: { type: string }
+              statement_fee_minor: { type: string }
+              statement_net_minor: { type: string }
+              rows: { type: integer }
+              differences: { type: integer }
+    PlatformOperations:
+      type: object
+      required: [channels, audit]
+      properties:
+        onboarding: { $ref: '#/components/schemas/PlatformOnboarding' }
+        channels:
+          type: array
+          items: { $ref: '#/components/schemas/PlatformChannel' }
+        upstream_integrations:
+          type: array
+          description: Platform-wide production onboarding records, not routable accounts.
+          items: { $ref: '#/components/schemas/UpstreamIntegration' }
+        audit:
+          type: array
+          items: { $ref: '#/components/schemas/PlatformAudit' }
+        merchant_channel_quotes:
+          description: Available collection routes and enabled payout account prices for the selected merchant. Each quote reflects the effective default or merchant override.
+          $ref: '#/components/schemas/MerchantChannelQuotes'
+        accounts:
+          type: array
+          items: { $ref: '#/components/schemas/PlatformAssignment' }
+        routes:
+          type: array
+          items: { $ref: '#/components/schemas/CollectionRouteChange' }
+        effective_routes:
+          type: array
+          items:
+            allOf:
+              - $ref: '#/components/schemas/Capability'
+              - type: object
+                required: [site_id, account_id]
+                properties:
+                  site_id: { $ref: '#/components/schemas/Reference' }
+                  account_id: { $ref: '#/components/schemas/Reference' }
+        keys:
+          type: array
+          items: { $ref: '#/components/schemas/WorkspaceAPIKey' }
+        sites:
+          type: array
+          items: { $ref: '#/components/schemas/SiteCard' }
+    SiteCard:
+      type: object
+      required: [id, name, is_default, business_domain, merchant_id, merchant_name, assigned_accounts, available_accounts, methods, proposals]
+      properties:
+        id: { $ref: '#/components/schemas/Reference' }
+        name: { type: string }
+        is_default: { type: boolean }
+        business_domain: { type: [string, 'null'], description: Optional display-only DNS name. }
+        merchant_id: { $ref: '#/components/schemas/Reference' }
+        merchant_name: { type: string }
+        assigned_accounts: { type: integer, minimum: 0 }
+        available_accounts: { type: integer, minimum: 0 }
+        methods:
+          type: array
+          items: { $ref: '#/components/schemas/Capability' }
+        proposals:
+          type: array
+          items:
+            allOf:
+              - $ref: '#/components/schemas/Capability'
+              - type: object
+                required: [available]
+                properties:
+                  available: { type: boolean }
+    RouteSnapshot:
+      type: object
+      required: [capability_version, environment, site_id, account_id, provider, requests_per_second, capability]
+      properties:
+        platform_channel_id: { $ref: '#/components/schemas/Reference' }
+        capability_version: { type: string }
+        environment: { const: sandbox }
+        site_id: { $ref: '#/components/schemas/Reference' }
+        account_id: { $ref: '#/components/schemas/Reference' }
+        route_change_id: { $ref: '#/components/schemas/Reference' }
+        provider: { $ref: '#/components/schemas/MockProvider' }
+        requests_per_second: { type: integer }
+        capability: { $ref: '#/components/schemas/Capability' }
+    PaymentRequest:
+      allOf:
+        - $ref: '#/components/schemas/Capability'
+        - type: object
+          required: [merchant_reference, amount_minor]
+          properties:
+            merchant_reference: { $ref: '#/components/schemas/Reference' }
+            amount_minor: { type: integer, minimum: 1, maximum: 999999999999 }
+            site_id:
+              description: Omit to use the merchant's default site.
+              $ref: '#/components/schemas/Reference'
+    Payment:
+      allOf:
+        - $ref: '#/components/schemas/PaymentRequest'
+        - type: object
+          required: [id, status, created_at, expires_at]
+          properties:
+            id: { type: string }
+            status: { enum: [requires_action, succeeded, expired, pending_confirmation, failed] }
+            created_at: { type: string, format: date-time }
+            expires_at: { type: string, format: date-time }
+            paid_at: { type: string, format: date-time }
+            checkout_path:
+              type: string
+              format: uri-reference
+              deprecated: true
+            checkout_url:
+              description: Same-origin path to the FlowXPay checkout on the sandbox web origin.
+              type: string
+              format: uri-reference
+            failure_code:
+              enum: [channel_confirmation_pending, channel_action_unsupported, channel_rejected, channel_rate_limited]
+            route_snapshot:
+              description: Route saved at order creation. Older sandbox orders can omit this field.
+              $ref: '#/components/schemas/RouteSnapshot'
+            next_action: { $ref: '#/components/schemas/NextAction' }
+            quote: { anyOf: [{ $ref: '#/components/schemas/MerchantOrderFee' }, { type: 'null' }] }
+    NextAction:
+      oneOf:
+        - type: object
+          required: [type, url]
+          properties:
+            type: { const: redirect }
+            url: { type: string, format: uri-reference }
+        - type: object
+          required: [type, qr_payload, qr_image_url]
+          properties:
+            type: { const: display_qr }
+            qr_payload: { type: string }
+            qr_image_url: { type: string, format: uri-reference }
+        - type: object
+          required: [type]
+          properties:
+            type: { const: unsupported }

@@ -1,0 +1,15 @@
+{
+  "id": "sample-usd-20261119",
+  "statement_date": "2026-11-19",
+  "settlement_status": "settled",
+  "withdrawal_status": "completed",
+  "withdrawal_reference": "mock-withdrawal-usd-01",
+  "entries": [
+    {"id":"usd-collection-1","kind":"collection","channel_reference":"mock-collection-01","gross_minor":10000,"fee_minor":300,"net_minor":9700},
+    {"id":"usd-refund-1","kind":"refund","channel_reference":"mock-refund-01","gross_minor":-2000,"fee_minor":50,"net_minor":-2050},
+    {"id":"usd-payout-1","kind":"payout","channel_reference":"mock-payout-01","gross_minor":-1000,"fee_minor":25,"net_minor":-1025},
+    {"id":"usd-late-order","kind":"collection","channel_reference":"mock-collection-late","gross_minor":900,"fee_minor":10,"net_minor":890},
+    {"id":"usd-amount-difference","kind":"collection","channel_reference":"mock-collection-wrong","gross_minor":700,"fee_minor":20,"net_minor":680},
+    {"id":"-usd-unmatched","kind":"collection","channel_reference":"mock-collection-missing","gross_minor":500,"fee_minor":25,"net_minor":470}
+  ]
+}

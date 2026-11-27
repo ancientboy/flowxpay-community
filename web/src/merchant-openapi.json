@@ -1,0 +1,1353 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "FlowXPay Merchant API",
+    "version": "0.7.0",
+    "description": "Local sandbox contract for merchant collections, payouts and settlement. All funds and channel actions are simulated."
+  },
+  "servers": [
+    {
+      "url": "/v1"
+    }
+  ],
+  "security": [
+    {
+      "SandboxKey": []
+    }
+  ],
+  "webhooks": {
+    "terminalBusinessEvent": {
+      "post": {
+        "security": [],
+        "summary": "Deliver a terminal payment, refund or payout event to an allowed local mock receiver",
+        "parameters": [
+          {
+            "name": "FlowXPay-Event-ID",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "FlowXPay-Timestamp",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "FlowXPay-Signature",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/CollectionEvent"
+                  },
+                  {
+                    "$ref": "#/components/schemas/PayoutEvent"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Receipt acknowledged. Deduplicate using the event ID."
+          }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/capabilities": {
+      "get": {
+        "operationId": "listCapabilities",
+        "summary": "Read enabled sandbox methods for the authenticated merchant",
+        "responses": {
+          "200": {
+            "description": "Merchant and enabled methods",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "environment",
+                    "capability_version",
+                    "merchant",
+                    "payments",
+                    "sites"
+                  ],
+                  "properties": {
+                    "environment": {
+                      "const": "sandbox"
+                    },
+                    "capability_version": {
+                      "const": "sandbox-collections-v1"
+                    },
+                    "request_signing_required": {
+                      "type": "boolean",
+                      "description": "Whether payment creation and refunds require Ed25519 request signatures."
+                    },
+                    "merchant": {
+                      "type": "object",
+                      "required": [
+                        "id",
+                        "name"
+                      ],
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "payments": {
+                      "description": "Eligible payment methods for the default site.",
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Capability"
+                      }
+                    },
+                    "sites": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/SiteCapability"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Error"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/payments": {
+      "get": {
+        "operationId": "listPayments",
+        "summary": "List up to 100 recent payments for the authenticated merchant",
+        "parameters": [
+          {
+            "name": "merchant_reference",
+            "in": "query",
+            "description": "Optional exact match to recover an existing payment by merchant reference",
+            "schema": {
+              "$ref": "#/components/schemas/Reference"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Recent payments or the exact matching reference",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Payment"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      },
+      "post": {
+        "operationId": "createPayment",
+        "summary": "Reserve a payment on one sandbox channel account and return the current order state",
+        "parameters": [
+          {
+            "name": "FlowXPay-Key-ID",
+            "in": "header",
+            "required": false,
+            "description": "Required for enrolled signed merchants.",
+            "schema": {
+              "$ref": "#/components/schemas/Reference"
+            }
+          },
+          {
+            "name": "FlowXPay-Request-Timestamp",
+            "in": "header",
+            "required": false,
+            "description": "Required for enrolled signed merchants. UTC Unix seconds within 300 seconds.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9]+$"
+            }
+          },
+          {
+            "name": "FlowXPay-Request-Nonce",
+            "in": "header",
+            "required": false,
+            "description": "Required for enrolled signed merchants. Unique per merchant and request.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{22,64}$"
+            }
+          },
+          {
+            "name": "FlowXPay-Request-Signature",
+            "in": "header",
+            "required": false,
+            "description": "Required for enrolled signed merchants. Ed25519 unpadded Base64URL.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{86}$"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Reference"
+            },
+            "description": "Reuse this key for the same request until its result is known."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PaymentRequest"
+              },
+              "examples": {
+                "brazilPix": {
+                  "value": {
+                    "merchant_reference": "BR-DEMO-01",
+                    "market": "BR",
+                    "currency": "BRL",
+                    "method": "pix",
+                    "amount_minor": 129000
+                  }
+                },
+                "usCard": {
+                  "value": {
+                    "merchant_reference": "US-DEMO-01",
+                    "market": "US",
+                    "currency": "USD",
+                    "method": "card",
+                    "amount_minor": 24900
+                  }
+                },
+                "indiaGateway": {
+                  "value": {
+                    "merchant_reference": "IN-DEMO-01",
+                    "market": "IN",
+                    "currency": "INR",
+                    "method": "gateway",
+                    "amount_minor": 24900
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Payment reserved. Inspect status and failure_code before using any action.",
+            "headers": {
+              "Location": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Payment"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Idempotent replay. Returns the current state of the original payment.",
+            "headers": {
+              "Idempotency-Replayed": {
+                "schema": {
+                  "type": "string",
+                  "const": "true"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Payment"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error"
+          },
+          "415": {
+            "$ref": "#/components/responses/Error"
+          },
+          "429": {
+            "description": "Local account budget exhausted before dispatch. Retry using the original key.",
+            "headers": {
+              "Retry-After": {
+                "schema": {
+                  "type": "integer",
+                  "const": 1
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/payments/{id}": {
+      "get": {
+        "operationId": "getPayment",
+        "summary": "Read a payment belonging to the authenticated merchant",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Current payment",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Payment"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Error"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/payments/{id}/refunds": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "get": {
+        "operationId": "listPaymentRefunds",
+        "summary": "List up to 100 recent refunds for the authenticated merchant's payment",
+        "responses": {
+          "200": {
+            "description": "Refund records with their own state",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Refund"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Error"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      },
+      "post": {
+        "operationId": "createRefund",
+        "summary": "Reserve a simulated refund against the original paid transaction and account",
+        "parameters": [
+          {
+            "name": "FlowXPay-Key-ID",
+            "in": "header",
+            "required": false,
+            "description": "Required for enrolled signed merchants.",
+            "schema": {
+              "$ref": "#/components/schemas/Reference"
+            }
+          },
+          {
+            "name": "FlowXPay-Request-Timestamp",
+            "in": "header",
+            "required": false,
+            "description": "Required for enrolled signed merchants. UTC Unix seconds within 300 seconds.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9]+$"
+            }
+          },
+          {
+            "name": "FlowXPay-Request-Nonce",
+            "in": "header",
+            "required": false,
+            "description": "Required for enrolled signed merchants. Unique per merchant and request.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{22,64}$"
+            }
+          },
+          {
+            "name": "FlowXPay-Request-Signature",
+            "in": "header",
+            "required": false,
+            "description": "Required for enrolled signed merchants. Ed25519 unpadded Base64URL.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{86}$"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "description": "Keep the same key, payment and amount until the original refund is identified.",
+            "schema": {
+              "$ref": "#/components/schemas/Reference"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "amount_minor"
+                ],
+                "properties": {
+                  "amount_minor": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 999999999999
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Reserved refund. Inspect its current status.",
+            "headers": {
+              "Location": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Refund"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Current state of the originally reserved refund",
+            "headers": {
+              "Idempotency-Replayed": {
+                "schema": {
+                  "type": "string",
+                  "const": "true"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Refund"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error"
+          },
+          "409": {
+            "description": "Conflicting key, unavailable original transaction, or cumulative balance exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "415": {
+            "$ref": "#/components/responses/Error"
+          },
+          "429": {
+            "description": "Original channel account rate limit reached before reservation committed",
+            "headers": {
+              "Retry-After": {
+                "schema": {
+                  "type": "string",
+                  "const": "1"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/refunds/{id}": {
+      "get": {
+        "operationId": "getRefund",
+        "summary": "Read a refund independently of its payment",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Refund state",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Refund"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Error"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/collection-exceptions": {
+      "get": {
+        "operationId": "listCollectionExceptions",
+        "summary": "List up to 100 recent collection exceptions for the authenticated merchant",
+        "responses": {
+          "200": {
+            "description": "Pending confirmations, contradictory callbacks, replay conflicts and failed Webhook deliveries",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/CollectionException"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Error"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "SandboxKey": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "Send the managed sandbox API key in Authorization as a Bearer credential. The API derives the merchant from the key. Enrolled sandbox merchants also sign payment creation and refunds. The original sandbox environment key remains valid until explicitly retired."
+      }
+    },
+    "schemas": {
+      "Capability": {
+        "type": "object",
+        "required": [
+          "market",
+          "currency",
+          "method"
+        ],
+        "properties": {
+          "market": {
+            "enum": [
+              "BR",
+              "US",
+              "IN"
+            ]
+          },
+          "currency": {
+            "enum": [
+              "BRL",
+              "USD",
+              "INR"
+            ]
+          },
+          "method": {
+            "enum": [
+              "pix",
+              "card",
+              "gateway"
+            ]
+          }
+        },
+        "oneOf": [
+          {
+            "properties": {
+              "market": {
+                "const": "BR"
+              },
+              "currency": {
+                "const": "BRL"
+              },
+              "method": {
+                "const": "pix"
+              }
+            }
+          },
+          {
+            "properties": {
+              "market": {
+                "const": "US"
+              },
+              "currency": {
+                "const": "USD"
+              },
+              "method": {
+                "const": "card"
+              }
+            }
+          },
+          {
+            "properties": {
+              "market": {
+                "const": "IN"
+              },
+              "currency": {
+                "const": "INR"
+              },
+              "method": {
+                "const": "gateway"
+              }
+            }
+          }
+        ]
+      },
+      "SiteCapability": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "default",
+          "payments",
+          "accounts"
+        ],
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/Reference"
+          },
+          "name": {
+            "type": "string"
+          },
+          "default": {
+            "type": "boolean"
+          },
+          "payments": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Capability"
+            }
+          },
+          "accounts": {
+            "type": "array",
+            "items": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Capability"
+                },
+                {
+                  "type": "object",
+                  "required": [
+                    "account_id",
+                    "enabled",
+                    "provider",
+                    "requests_per_second",
+                    "next_action_type"
+                  ],
+                  "properties": {
+                    "account_id": {
+                      "$ref": "#/components/schemas/Reference"
+                    },
+                    "enabled": {
+                      "type": "boolean"
+                    },
+                    "provider": {
+                      "$ref": "#/components/schemas/MockProvider"
+                    },
+                    "requests_per_second": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 1000
+                    },
+                    "next_action_type": {
+                      "enum": [
+                        "redirect",
+                        "display_qr",
+                        "unsupported"
+                      ]
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      },
+      "Reference": {
+        "type": "string",
+        "pattern": "^[a-zA-Z0-9._:-]{1,80}$"
+      },
+      "MockProvider": {
+        "enum": [
+          "mock_card",
+          "mock_pix",
+          "mock_in_redirect",
+          "mock_in_qr",
+          "mock_in_unknown"
+        ]
+      },
+      "Error": {
+        "type": "object",
+        "required": [
+          "error"
+        ],
+        "properties": {
+          "error": {
+            "type": "object",
+            "required": [
+              "code",
+              "message"
+            ],
+            "properties": {
+              "code": {
+                "type": "string"
+              },
+              "message": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "Payment": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/PaymentRequest"
+          },
+          {
+            "type": "object",
+            "required": [
+              "id",
+              "status",
+              "created_at",
+              "expires_at"
+            ],
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "status": {
+                "enum": [
+                  "requires_action",
+                  "succeeded",
+                  "expired",
+                  "pending_confirmation",
+                  "failed"
+                ]
+              },
+              "created_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "expires_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "paid_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "checkout_path": {
+                "type": "string",
+                "format": "uri-reference",
+                "deprecated": true
+              },
+              "checkout_url": {
+                "description": "Same-origin path to the FlowXPay checkout on the sandbox web origin.",
+                "type": "string",
+                "format": "uri-reference"
+              },
+              "failure_code": {
+                "enum": [
+                  "channel_confirmation_pending",
+                  "channel_action_unsupported",
+                  "channel_rejected",
+                  "channel_rate_limited"
+                ]
+              },
+              "route_snapshot": {
+                "description": "Route saved at order creation. Older sandbox orders can omit this field.",
+                "$ref": "#/components/schemas/RouteSnapshot"
+              },
+              "next_action": {
+                "$ref": "#/components/schemas/NextAction"
+              },
+              "quote": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/MerchantOrderFee"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "PaymentRequest": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Capability"
+          },
+          {
+            "type": "object",
+            "required": [
+              "merchant_reference",
+              "amount_minor"
+            ],
+            "properties": {
+              "merchant_reference": {
+                "$ref": "#/components/schemas/Reference"
+              },
+              "amount_minor": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 999999999999
+              },
+              "site_id": {
+                "description": "Omit to use the merchant's default site.",
+                "$ref": "#/components/schemas/Reference"
+              }
+            }
+          }
+        ]
+      },
+      "RouteSnapshot": {
+        "type": "object",
+        "required": [
+          "capability_version",
+          "environment",
+          "site_id",
+          "account_id",
+          "provider",
+          "requests_per_second",
+          "capability"
+        ],
+        "properties": {
+          "platform_channel_id": {
+            "$ref": "#/components/schemas/Reference"
+          },
+          "capability_version": {
+            "type": "string"
+          },
+          "environment": {
+            "const": "sandbox"
+          },
+          "site_id": {
+            "$ref": "#/components/schemas/Reference"
+          },
+          "account_id": {
+            "$ref": "#/components/schemas/Reference"
+          },
+          "route_change_id": {
+            "$ref": "#/components/schemas/Reference"
+          },
+          "provider": {
+            "$ref": "#/components/schemas/MockProvider"
+          },
+          "requests_per_second": {
+            "type": "integer"
+          },
+          "capability": {
+            "$ref": "#/components/schemas/Capability"
+          }
+        }
+      },
+      "NextAction": {
+        "oneOf": [
+          {
+            "type": "object",
+            "required": [
+              "type",
+              "url"
+            ],
+            "properties": {
+              "type": {
+                "const": "redirect"
+              },
+              "url": {
+                "type": "string",
+                "format": "uri-reference"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": [
+              "type",
+              "qr_payload",
+              "qr_image_url"
+            ],
+            "properties": {
+              "type": {
+                "const": "display_qr"
+              },
+              "qr_payload": {
+                "type": "string"
+              },
+              "qr_image_url": {
+                "type": "string",
+                "format": "uri-reference"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": [
+              "type"
+            ],
+            "properties": {
+              "type": {
+                "const": "unsupported"
+              }
+            }
+          }
+        ]
+      },
+      "MerchantOrderFee": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/OrderFee"
+          },
+          {
+            "$ref": "#/components/schemas/MerchantFeeVersion"
+          }
+        ]
+      },
+      "OrderFee": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/FeeVersion"
+          },
+          {
+            "type": "object",
+            "required": [
+              "fee_minor"
+            ],
+            "properties": {
+              "fee_minor": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1999999999998
+              }
+            }
+          }
+        ]
+      },
+      "FeeVersion": {
+        "type": "object",
+        "required": [
+          "bps",
+          "fixed_minor",
+          "version_id",
+          "source",
+          "effective_at"
+        ],
+        "properties": {
+          "bps": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 10000
+          },
+          "fixed_minor": {
+            "$ref": "#/components/schemas/PricingAmount"
+          },
+          "version_id": {
+            "type": "string",
+            "pattern": "^[0-9]+$"
+          },
+          "source": {
+            "enum": [
+              "cost",
+              "default",
+              "override"
+            ]
+          },
+          "effective_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "PricingAmount": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 999999999999
+      },
+      "MerchantFeeVersion": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/FeeVersion"
+          },
+          {
+            "properties": {
+              "source": {
+                "enum": [
+                  "default",
+                  "override"
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "Refund": {
+        "type": "object",
+        "required": [
+          "id",
+          "payment_id",
+          "currency",
+          "amount_minor",
+          "status",
+          "created_at",
+          "updated_at"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "payment_id": {
+            "type": "string"
+          },
+          "currency": {
+            "enum": [
+              "USD",
+              "BRL",
+              "INR"
+            ]
+          },
+          "amount_minor": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 999999999999
+          },
+          "status": {
+            "enum": [
+              "pending_confirmation",
+              "succeeded",
+              "failed"
+            ]
+          },
+          "failure_code": {
+            "enum": [
+              "channel_confirmation_pending",
+              "channel_rejected",
+              "channel_rate_limited"
+            ]
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "CollectionException": {
+        "type": "object",
+        "required": [
+          "kind",
+          "payment_id",
+          "subject_id",
+          "at"
+        ],
+        "properties": {
+          "kind": {
+            "enum": [
+              "terminal_conflict",
+              "replay_conflict",
+              "webhook_failed",
+              "payment_confirmation_pending",
+              "refund_confirmation_pending"
+            ]
+          },
+          "payment_id": {
+            "type": "string"
+          },
+          "subject_id": {
+            "type": "string"
+          },
+          "event_id": {
+            "type": "string"
+          },
+          "at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "CollectionEvent": {
+        "type": "object",
+        "required": [
+          "id",
+          "type",
+          "payment_id",
+          "status",
+          "currency",
+          "amount_minor",
+          "occurred_at"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "type": {
+            "enum": [
+              "payment.succeeded",
+              "payment.failed",
+              "refund.succeeded",
+              "refund.failed"
+            ]
+          },
+          "payment_id": {
+            "type": "string"
+          },
+          "refund_id": {
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "succeeded",
+              "failed"
+            ]
+          },
+          "currency": {
+            "enum": [
+              "USD",
+              "BRL",
+              "INR"
+            ]
+          },
+          "amount_minor": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "occurred_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "PayoutEvent": {
+        "type": "object",
+        "required": [
+          "id",
+          "type",
+          "payout_id",
+          "account_id",
+          "status",
+          "currency",
+          "amount_minor",
+          "occurred_at"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "type": {
+            "enum": [
+              "payout.succeeded",
+              "payout.failed",
+              "payout.rejected"
+            ]
+          },
+          "payout_id": {
+            "type": "string"
+          },
+          "account_id": {
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "succeeded",
+              "failed",
+              "rejected"
+            ]
+          },
+          "amount_minor": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "currency": {
+            "enum": [
+              "USD",
+              "BRL",
+              "INR"
+            ]
+          },
+          "transfer_reference": {
+            "type": "string"
+          },
+          "occurred_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      }
+    },
+    "responses": {
+      "Error": {
+        "description": "Stable machine-readable API error",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      }
+    }
+  }
+}

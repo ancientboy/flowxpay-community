@@ -45,17 +45,6 @@
   .payout-table .inspect { grid-area: inspect; justify-self: end; }
 }
 
-.payout-theme-switch { flex-shrink: 0; }
-.payout-theme-track {
-  display: inline-flex; align-items: center; width: 28px; height: 16px; padding: 2px;
-  border-radius: 99px; background: #647687;
-}
-.payout-theme-track::before {
-  content: ""; width: 12px; height: 12px; border-radius: 50%; background: white;
-}
-.payout-theme-switch[aria-checked="true"] .payout-theme-track { background: var(--action); justify-content: flex-end; }
-.payout-theme-switch[aria-checked="true"] .payout-theme-track::before { background: var(--canvas); }
-
 .payout-filter-field { display: grid; gap: 5px; min-width: 0; }
 .payout-filter-trigger {
   display: flex; justify-content: space-between; align-items: center; gap: 8px;
@@ -109,11 +98,6 @@
   }
   .payout-filter-option { min-height: 44px; }
 }
-.topbar .payout-filter-field > label {
-  position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%);
-}
-.topbar .payout-filter-field { width: 7.5rem; }
-
 [data-payout-theme] {
   --raised: var(--table-heading-bg); --navy: #24262a;
   --action: #5c4b93; --active: #eae5f4; --teal: #7866a7; --muted: #62666c;
@@ -232,4 +216,73 @@
   .payout-metric-top { font-size: .87rem; }
   .payout-icon { width: 23px; height: 23px; }
   .payout-count { font-size: .77rem; }
+}
+
+/* Operator navigation and account preferences share one sidebar on all pages. */
+.platform-shell .operator-sidebar,
+.member-shell dialog.operator-menu[open] {
+  display: flex; flex-direction: column; min-width: 0; background: var(--canvas); color: var(--navy);
+}
+.platform-shell .operator-sidebar {
+  position: sticky; top: 76px; align-self: start; height: calc(100vh - 76px); height: calc(100dvh - 76px);
+  border-inline-end: 1px solid var(--border);
+}
+@media (min-width: 681px) {
+  .platform-shell > :is(.platform-brand, .topbar) { position: sticky; top: 0; z-index: 2; }
+}
+.platform-shell .operator-sidebar[hidden] { display: none; }
+.platform-shell :is(.operator-sidebar, .operator-menu) > .nav {
+  flex: 1; min-height: 0; overflow-y: auto; border: none;
+}
+.operator-account { flex: none; border-top: 1px solid var(--border); margin: 0 12px; padding: 10px 0; }
+.operator-profile, .operator-preferences { display: grid; grid-template-columns: 24px minmax(0,1fr) 34px; align-items: center; gap: 6px; padding-inline: 4px; }
+.operator-profile > span { font-size: .85rem; font-weight: 620; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.operator-profile > svg, .operator-preferences > svg { justify-self: center; color: var(--muted); }
+.operator-icon { width: 34px; height: 34px; display: grid; place-items: center; background: transparent; color: var(--muted); border: 0; border-radius: 8px; }
+.operator-icon:hover, .operator-icon[aria-checked="true"] { background: var(--raised); color: var(--navy); }
+.operator-preferences .payout-filter-trigger { min-height: 34px; width: fit-content; max-width: 100%; gap: 4px; background: transparent; color: var(--muted); border: 0; padding: 0 4px; }
+.operator-preferences .payout-filter-trigger:hover { color: var(--navy); background: var(--raised); }
+.operator-preferences label { position: absolute; width: 1px; height: 1px; clip-path: inset(50%); overflow: hidden; }
+.platform-shell .topbar > .tag { margin-inline-start: auto; }
+
+/* Match the order ledger's surface, type and rules across the light console. */
+.platform-shell[data-order-page="false"] .page-heading { margin-bottom: clamp(16px,2vw,24px); }
+.platform-shell[data-payout-theme="light"][data-order-page="false"] .workspace {
+  --section-inset: clamp(14px,2vw,20px);
+  --section-rule: color-mix(in srgb, var(--border) 64%, var(--surface));
+}
+.platform-shell[data-payout-theme="light"][data-order-page="false"] .workspace-panel {
+  border-radius: 14px; border-color: var(--border); box-shadow: 0 3px 12px rgb(22 52 68 / 3%);
+}
+.platform-shell[data-payout-theme="light"] .workspace-panel > .panel-heading { padding: 17px var(--section-inset, 16px) 14px; }
+.platform-shell[data-payout-theme="light"][data-order-page="false"] .workspace-panel :is(td, th) { border-color: var(--section-rule); }
+.platform-shell[data-payout-theme="light"][data-order-page="false"] .workspace-panel thead th { background: #f5f8f9; color: var(--muted); font-weight: 600; }
+.platform-shell[data-payout-theme="light"] .overview-metrics.platform-metrics {
+  gap: 10px; padding: 0 var(--section-inset) var(--section-inset); border: 0; background: transparent;
+}
+.platform-shell[data-payout-theme="light"] .platform-metrics > div {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 12px; gap: 6px;
+}
+.platform-shell[data-payout-theme="light"] .platform-metrics strong,
+.platform-shell[data-payout-theme="light"] .task-summary-card strong { font-weight: 680; color: var(--navy); font-variant-numeric: tabular-nums; }
+.platform-shell[data-payout-theme="light"] :is(.platform-merchant-cards, .platform-channel-groups, .platform-task-groups) { padding-inline: var(--section-inset); }
+.platform-shell[data-payout-theme="light"] .platform-card { border-radius: 12px; padding: 16px; border-color: var(--section-rule); box-shadow: none; }
+.platform-shell[data-payout-theme="light"] .platform-card-meta { border-color: var(--section-rule); }
+.platform-shell[data-payout-theme="light"] .task-summary-card:enabled:hover { background: var(--raised); border-color: var(--control-border); }
+.platform-shell[data-payout-theme="dark"] { --table-heading-bg: var(--raised); }
+.platform-shell[data-payout-theme="dark"] :is(.overview-metrics > div:first-child, tbody tr:hover, .task-summary-card:enabled:hover) { background: var(--raised); }
+
+@media (max-width: 680px) {
+  .member-shell dialog.operator-menu[open] {
+    inset: 0 auto 0 0; margin: 0; width: min(295px, 90vw); max-width: 100%;
+    height: 100dvh; max-height: 100dvh; padding: 0; border: 0; border-inline-end: 1px solid var(--border); border-radius: 0;
+  }
+  .member-shell .operator-menu .dialog-header { position: static; margin: 0; padding: 10px 14px; }
+  .platform-shell .operator-menu > .nav { display: block; padding: 8px 10px; }
+  .platform-shell .operator-menu .nav button { justify-content: flex-start; width: 100%; min-height: 43px; gap: 10px; }
+  .operator-menu .operator-account { padding-bottom: max(10px, env(safe-area-inset-bottom)); }
+  .operator-menu .operator-icon, .operator-menu .payout-filter-trigger { min-height: 44px; }
+  .operator-menu .operator-icon { width: 44px; }
+  .operator-menu :is(.operator-profile, .operator-preferences) { grid-template-columns: 24px minmax(0,1fr) 44px; }
+  .platform-shell .topbar nav { gap: 6px 12px; }
 }

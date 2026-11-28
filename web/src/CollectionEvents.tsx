@@ -2,7 +2,7 @@ import { useLocale } from "./locale";
 import { useEffect, useState, type FormEvent } from "react";
 import { parseMinorUnits, request, type CollectionException, type Payment, type Refund } from "./api";
 
-const states:Record<string,string> = { draft: "Draft", rejected: "Rejected", processing: "Processing", queued:"Queued", routing:"Processing", cancelled:"Cancelled", pending_approval:"Pending approval", requires_action: "Awaiting payment", succeeded: "Paid", expired: "Expired", pending_confirmation: "Pending confirmation", failed: "Failed" };
+export const collectionStatuses:Record<string,string> = { review: "Payment review pending", draft: "Draft", rejected: "Rejected", processing: "Processing", queued:"Queued", routing:"Processing", cancelled:"Cancelled", pending_approval:"Pending approval", requires_action: "Awaiting payment", succeeded: "Paid", expired: "Expired", pending_confirmation: "Pending confirmation", failed: "Failed" };
 
 export function PaymentStatusBadge({ payment, payout }: {
   payment: { status: string; checkout_needs_review?: boolean }; payout?: boolean;
@@ -10,7 +10,7 @@ export function PaymentStatusBadge({ payment, payout }: {
   const { t } = useLocale();
   if (payment.checkout_needs_review && !payout) return <span className="tag amber"><i aria-hidden="true" />{t("Payment review pending")}</span>;
   const variant = payment.status === "succeeded" ? "green" : payment.status === "expired" ? "gray" : payment.status === "failed" ? "red" : "amber";
-  return <span className={`tag ${variant}`}><i aria-hidden="true" />{t(payout && payment.status === "succeeded" ? "Succeeded" : states[payment.status] ?? payment.status)}</span>;
+  return <span className={`tag ${variant}`}><i aria-hidden="true" />{t(payout && payment.status === "succeeded" ? "Succeeded" : collectionStatuses[payment.status] ?? payment.status)}</span>;
 }
 
 const refundStates = { succeeded: "Refunded", failed: "Failed", pending_confirmation: "Pending confirmation" };

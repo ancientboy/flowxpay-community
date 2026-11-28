@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { PaymentStatusBadge } from "./CollectionEvents";
+import { PlatformOrderSummary } from "./PlatformOrderSummary";
+import { collectionStatuses, PaymentStatusBadge } from "./CollectionEvents";
 import { useLocale } from "./locale";
 import { platformAPI } from "./platformEnvironment";
 import { LoadState, useWorkspaceData, WorkspaceTable } from "./WorkspaceInventoryUI";
@@ -45,8 +46,24 @@ export function PlatformCollectionOrders({ merchant, initialReference, token, re
   const columns = [t("Platform reference"), t("Channel"), t("Amount"), t("Status"), l("净入账", "Net credited"),
     l("结算 / 通知", "Settlement / notification"), t("Created"), l("查证", "Evidence")];
 
-  return <section className="workspace-panel period-report">
-    <div className="heading panel-heading"><h2>{title}</h2></div>
+  const rows = state.data?.rows;
+  const tabs = ["", "succeeded", "requires_action", "review", "failed"];
+  const statusLabel = (status: string) => t(collectionStatuses[status] ?? status);
+
+  return <section className="payout-book collection-report">
+    <p className="payout-scope">{l("按币种汇总当前页的代收订单金额。净入账以订单记录为准。", "Amounts are grouped by currency for this page. Net credits are shown per order.")}</p>
+    {rows && <PlatformOrderSummary rows={rows} scope={rows.map(row => row.checkout_needs_review ? {...row, status: "review"} : row)}
+      label={t("Collection order amount")} statusLabel={statusLabel} isoScale />}
+    <div className="payout-ledger">
+    <div className="payout-ledger-head"><h2>{title}</h2>{rows && <span>{l("本页", "This page")} · {rows.length}</span>}</div>
+    <div className="payout-tabs" role="group" aria-label={t("Status")}>
+      {tabs.map(status => <button type="button" key={status} className="payout-tab" aria-pressed={filters.status === status}
+        onClick={() => {
+          if (filters.status === status) return;
+          const next = { ...filters, status };
+          setDraft(next); setFilters(next); setCursors([""]); state.reload();
+        }}>{status ? statusLabel(status) : t("All collections")}</button>)}
+    </div>
     <form className="platform-finance-filters period-filters" onSubmit={event => {
       event.preventDefault();
       state.reload();
@@ -82,10 +99,10 @@ export function PlatformCollectionOrders({ merchant, initialReference, token, re
         setDraft(empty);
         setFilters(empty);
         state.reload();
-      setCursors([""]);
+        setCursors([""]);
       }}>{t("Clear")}</button>
     </form>
-    <LoadState state={state} label={title}>{page => <>
+    <div className="workspace-panel period-report collection-results"><LoadState state={state} label={title}>{page => <>
       {page.rows.length ? <WorkspaceTable label={title} columns={columns}>
         {page.rows.map(row => <tr key={row.id}>
           <th scope="row" data-label={columns[0]} className="order-number">
@@ -113,6 +130,7 @@ export function PlatformCollectionOrders({ merchant, initialReference, token, re
           }
         }}>{l("下一页", "Next")}</button>
       </div>}
-    </>}</LoadState>
+    </>}</LoadState></div>
+    </div>
   </section>;
 }

@@ -208,3 +208,10 @@
   .payout-tools { padding: 0 0 13px; }
   [data-payout-theme] .workspace { padding-inline: 16px; }
 }
+
+
+.payout-activity [data-status=requires_action] { background: #879db3; }
+.payout-activity [data-status=review] { background: #ca9c56; }
+.collection-results { margin-top: 14px; }
+[data-payout-theme="dark"] .collection-results th { background: var(--raised); }
+[data-payout-theme="dark"] .collection-results tbody tr:hover { background: var(--raised); }

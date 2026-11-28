@@ -56,11 +56,12 @@ export interface ChannelAccount {
 }
 
 export function MemberWorkspace({ logo, token, member, signedOut, endSession, demoLinks,
-  environment = "Sandbox", capabilities }: {
+  environment = "Sandbox", capabilities, initialPage = "Overview" }: {
   environment?: "Production" | "Sandbox";
   capabilities: WorkspaceCapabilities;
   endSession?: () => Promise<void>;
   demoLinks?: ReactNode;
+  initialPage?: "Overview" | "API documentation";
   logo: ReactNode;
   token: string;
   member: MemberSession;
@@ -69,12 +70,19 @@ export function MemberWorkspace({ logo, token, member, signedOut, endSession, de
   const { t, locale } = useLocale();
   const zh = locale === "zh-CN";
   const production = environment === "Production";
-  const [page, setPage] = useState<MerchantPage>("Overview");
+  const [page, setPage] = useState<MerchantPage>(initialPage);
   const [channelTab, setChannelTab] = useState<"rates" | "history">("rates");
   const [statementAccount, setStatementAccount] = useState("");
   const [orderRef, setOrderRef] = useState("");
   const [pendingPayouts, setPendingPayouts] = useState(false);
   const mainHeading = useRef<HTMLHeadingElement>(null);
+  useEffect(() => {
+    if (import.meta.env.MODE !== "community-demo") return;
+    const url = new URL(window.location.href);
+    if (page === "API documentation") url.searchParams.set("page", "api-docs");
+    else if (url.searchParams.get("page") === "api-docs") url.searchParams.delete("page");
+    if (url.href !== window.location.href) window.history.replaceState(window.history.state, "", url);
+  }, [page]);
   const previousPage = useRef(page);
   useEffect(() => {
     if (previousPage.current !== page) {

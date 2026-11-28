@@ -1,5 +1,7 @@
 # FlowXPay 商户 API 接入指南
 
+简体中文 · [English](merchant-api.en.md) · [在线文档](https://ancientboy.github.io/flowxpay-community/?workspace=merchant&page=api-docs&lang=zh-CN)
+
 本指南适用于 FlowXPay 社区版沙盒。这里的订单、退款和回调均使用模拟数据。接口字段、状态及响应结构见 [OpenAPI 规范](openapi.yaml)。
 
 ## 1. 获取沙盒密钥并查询可用通道
@@ -97,13 +99,13 @@ sandbox
 
 将二进制 Ed25519 签名编码为无填充 Base64URL，设置 `FlowXPay-Request-Signature`。时间戳为 UTC Unix 秒，窗口 ±300 秒。nonce 建议使用至少 16 个随机字节的无填充 Base64URL。网络超时先查原单，重试时使用原幂等键、同一请求体、新时间戳和新 nonce。重复 nonce 返回 HTTP 409；错误签名或超时签名返回 HTTP 401。商户端 API 文档包含 Node.js 签名示例。正式交易取决于商户权限、通道路由和资金可用状态。
 
-### Production transaction notifications
+### 正式环境交易通知
 
-A merchant administrator configures a public HTTPS endpoint on port 443 in **API keys → Merchant transaction notifications**. Configure or rotate displays a one-time base64url secret. Store it on your server. Endpoint setup is independent of the merchant API request-signing credential.
+商户管理员在「API 密钥 → 商户交易通知」中配置公网 HTTPS 地址，端口为 443。配置或轮换时，系统会展示一次 Base64URL 编码的通知密钥，请保存在商户服务端。此密钥独立于商户 API 请求签名凭据。
 
-FlowXPay sends JSON via POST for collection or payout terminal transitions. Fields are `event_id`, `type` (e.g. `collection.succeeded`), `order_id`, `merchant_id`, `merchant_reference`, `status`, `currency`, and `amount_minor` (string). To verify, base64url-decode the key and calculate lowercase hexadecimal HMAC-SHA256 over the exact bytes `timestamp + "." + event_id + "." + raw_body`. Verify the signature using constant-time comparison, check that the timestamp is within five minutes of your server clock, and that header and body event IDs and merchant identity agree. Do not parse and reserialize the body before verification.
+当代收或代付进入终态时，FlowXPay 通过 POST 发送 JSON。字段包括 `event_id`、`type`（例如 `collection.succeeded`）、`order_id`、`merchant_id`、`merchant_reference`、`status`、`currency` 和字符串类型的 `amount_minor`。先用 Base64URL 解码密钥，再对 `timestamp + "." + event_id + "." + raw_body` 的原始字节计算 HMAC-SHA256，并用恒定时间比较核对小写十六进制签名。时间戳与服务端时钟的差值不得超过五分钟。核对请求头与正文中的事件编号，以及正文中的商户标识。验签前须保留原始字节。
 
-Python example (header names are case-insensitive):
+Python 示例（请求头名称不区分大小写）：
 
 ```python
 import base64, hashlib, hmac, json, time
@@ -121,4 +123,4 @@ def verify_event(headers, raw, secret, merchant):
     return event
 ```
 
-Commit the event ID under a unique constraint in the same transaction as your order update. Return HTTP 2xx after commit, including for an already committed delivery. Redirects and other responses do not acknowledge delivery. Retry delays are 10 seconds, 30 seconds, 2 minutes, 10 minutes, 30 minutes, 2 hours, 6 hours and 12 hours. A crash can cause repeat deliveries. An event recorded before configuration, or exhausted after retries, can be manually redelivered under its original event ID. Reconfiguration never silently redirects previously queued events to a different URL.
+在同一个数据库事务中写入带唯一约束的事件编号并更新订单。提交成功后返回 HTTP 2xx；收到已提交的重复事件时也返回 2xx。重定向及其他响应均不表示投递成功。重试间隔依次为 10 秒、30 秒、2 分钟、10 分钟、30 分钟、2 小时、6 小时和 12 小时。进程中断可能导致重复投递。配置地址前记录的事件和重试已耗尽的事件，可使用原事件编号手动重新投递。变更接收地址不会自动将原队列中的事件改投到新地址。

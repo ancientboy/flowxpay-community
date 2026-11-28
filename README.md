@@ -77,7 +77,7 @@ npm --prefix web ci
 
 ## API 与通道
 
-[商户 API 指南](docs/merchant-api.md) · [OpenAPI](docs/openapi.yaml) · [上游适配指南](docs/channel-integrations.md)
+[中文 API 指南](docs/merchant-api.md) · [English API guide](docs/merchant-api.en.md) · [在线 API 文档](https://ancientboy.github.io/flowxpay-community/?workspace=merchant&page=api-docs&lang=zh-CN) · [OpenAPI](docs/openapi.yaml) · [上游适配指南](docs/channel-integrations.md)
 
 真实通道使用客户自己的上游账号。各家上游的签名、回调与账单协议需要分别适配和验证。需要接入新上游、部署支持或其他合作，请[联系商务](https://t.me/FlowXPay_nova)。
 

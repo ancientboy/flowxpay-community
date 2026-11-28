@@ -1,7 +1,7 @@
 import { useRef, useState } from "react";
 import { DownloadSimple } from "@phosphor-icons/react";
 import { MerchantDocCode as Code } from "./MerchantDocCode";
-import { useLocale } from "./locale";
+import { LanguageSelect, useLocale } from "./locale";
 import { endpoints, errors, eventSample, json, languages, merchantContract, requestExample, signedRequestNode, webhookPython,
   type SampleLanguage, type Text } from "./merchantDocsContent";
 
@@ -172,7 +172,7 @@ export function MerchantDocs() {
   return <div className="merchant-docs">
     <section className="workspace-panel docs-intro">
       <div className="heading"><h2>{t("Merchant integration")}</h2>
-        <div className="header-actions"><button type="button" className="secondary" onClick={() => download(json(merchantContract) + "\n", "flowxpay-merchant-openapi.json", "application/json")}>
+        <div className="header-actions"><LanguageSelect id="merchant-docs-language" /><button type="button" className="secondary" onClick={() => download(json(merchantContract) + "\n", "flowxpay-merchant-openapi.json", "application/json")}>
           <DownloadSimple size={17} aria-hidden="true" />{t("Download OpenAPI")}
         </button></div>
       </div>

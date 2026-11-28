@@ -4,7 +4,7 @@
 
 FlowXPay is an open-source, self-hosted platform for cross-border payment teams that manage their own provider integrations. One merchant API and an operations dashboard cover collections, payouts, routing, order lookup, refunds, and reconciliation.
 
-[Live demo](https://ancientboy.github.io/flowxpay-community/?lang=en-US) · [Download the one-minute sandbox demo (MP4)](https://github.com/ancientboy/flowxpay-community/releases/download/v0.1.0/flowxpay-community-v0.1.0-demo.mp4) · [Quick start](#quick-start) · [OpenAPI specification](docs/openapi.yaml)
+[Live demo](https://ancientboy.github.io/flowxpay-community/?lang=en-US) · [Download the one-minute sandbox demo (MP4)](https://github.com/ancientboy/flowxpay-community/releases/download/v0.1.0/flowxpay-community-v0.1.0-demo.mp4) · [Quick start](#quick-start) · [Merchant API guide](docs/merchant-api.en.md) · [Interactive API reference](https://ancientboy.github.io/flowxpay-community/?workspace=merchant&page=api-docs&lang=en-US) · [OpenAPI specification](docs/openapi.yaml)
 
 The live demo opens the community platform and merchant workspaces with read-only sample data. The self-hosted sandbox runs the Go API and PostgreSQL so you can perform workspace operations and simulate payments.
 
@@ -66,7 +66,7 @@ Open the URL printed in the terminal. Use the key from the file indicated by the
 
 ## Integrate a provider
 
-For API fields and responses, see the [OpenAPI specification](docs/openapi.yaml). The [merchant API walkthrough](docs/merchant-api.md) and [provider integration guide](docs/channel-integrations.md) are in Chinese.
+For API fields and responses, see the [OpenAPI specification](docs/openapi.yaml). Read the merchant API walkthrough in [English](docs/merchant-api.en.md) or [简体中文](docs/merchant-api.md). The [provider integration guide](docs/channel-integrations.md) is in Chinese.
 
 Live integrations use your own provider account. Signatures, callbacks, and statement formats require provider-specific implementation and testing. For adapter or deployment support, [contact FlowXPay on Telegram](https://t.me/FlowXPay_nova) with the provider name, country, currency, and collection or payout requirements.
 

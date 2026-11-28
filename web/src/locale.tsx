@@ -98,9 +98,9 @@ export function useLocale() {
   return { locale, setLocale, t, money, exactMoney, dateTime, date, localizedLink };
 }
 
-export function LanguageSelect() {
+export function LanguageSelect({ id = "flowxpay-language" }: { id?: string } = {}) {
   const { locale, setLocale, t } = useLocale();
-  return <select id="flowxpay-language" className="language-select" aria-label={t("Language")} value={locale}
+  return <select id={id} className="language-select" aria-label={t("Language")} value={locale}
     onChange={event => setLocale(resolveLocale(event.target.value))}>
     {Object.entries(languages).map(([value, name]) => <option key={value} value={value} lang={value}>{name}</option>)}
   </select>;

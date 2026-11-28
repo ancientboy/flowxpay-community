@@ -1,3 +1,4 @@
+import { PayoutFilterSelect } from "./PayoutFilterSelect";
 import { CheckCircle, Clock, Eye, MagnifyingGlass, Stack, WarningCircle } from "@phosphor-icons/react";
 import { PaymentStatusBadge } from "./CollectionEvents";
 import { useLocale } from "./locale";
@@ -89,15 +90,17 @@ export function PlatformPayoutOrders({ orders, merchants, merchant, onMerchant, 
           <span className="payout-search-input"><MagnifyingGlass size={17} aria-hidden="true" />
             <input value={search} onChange={e => onSearchChange(e.target.value)} maxLength={80} id="ops-payment-reference"
               placeholder={t("Order reference or ID")} pattern={"[a-zA-Z0-9._:\\-]{1,80}"} /></span></label>
-        <label>{t("Merchant")}<select id="ops-merchant-scope" value={merchant} onChange={e => onMerchant(e.target.value)}>
-          <option value="">{t("All merchants")}</option>{merchants.map(m => <option key={m.id} value={m.id}>{m.name} · {m.id}</option>)}</select></label>
-        <label>{t("Currency")}<select value={filters.currency} onChange={e => change("currency", e.target.value)}>
-          <option value="">{zh ? "全部币种" : "All currencies"}</option>{options(orders.map(o => o.currency), filters.currency).map(c => <option key={c}>{c}</option>)}</select></label>
-        <label>{zh ? "创建日期 · UTC" : "Created · UTC"}<select value={filters.date} onChange={e => change("date", e.target.value)}>
-          <option value="">{zh ? "全部日期" : "All dates"}</option>{options(orders.map(o => utcDay(o.created_at)), filters.date).reverse().map(d => <option key={d}>{d}</option>)}</select></label>
-        <label>{t("Status")}<select value={filters.status} onChange={e => change("status", e.target.value)}>
-          <option value="">{zh ? "全部状态" : "All statuses"}</option>{options(orders.map(o => o.status), filters.status).map(s =>
-            <option value={s} key={s}>{t(payoutStatuses[s] ?? s)}</option>)}</select></label>
+        <PayoutFilterSelect id="ops-merchant-scope" label={t("Merchant")} all={t("All merchants")}
+          options={merchants.map(m => ({ value: m.id, label: m.name + " · " + m.id }))} value={merchant} onChange={onMerchant} />
+        <PayoutFilterSelect id="ops-payout-currency" label={t("Currency")} all={zh ? "全部币种" : "All currencies"}
+          options={options(orders.map(o => o.currency), filters.currency).map(value => ({ value, label: value }))}
+          value={filters.currency} onChange={value => change("currency", value)} />
+        <PayoutFilterSelect id="ops-payout-date" label={zh ? "创建日期 · UTC" : "Created · UTC"} all={zh ? "全部日期" : "All dates"}
+          options={options(orders.map(o => utcDay(o.created_at)), filters.date).reverse().map(value => ({ value, label: value }))}
+          value={filters.date} onChange={value => change("date", value)} />
+        <PayoutFilterSelect id="ops-payout-status" label={t("Status")} all={zh ? "全部状态" : "All statuses"}
+          options={options(orders.map(o => o.status), filters.status).map(value => ({ value, label: t(payoutStatuses[value] ?? value) }))}
+          value={filters.status} onChange={value => change("status", value)} />
         <div className="payout-filter-actions"><button type="submit" className="primary">{t("Search")}</button>
           <button type="button" className="text-button" disabled={!hasFilters} onClick={reset}>{zh ? "重置" : "Reset"}</button></div>
       </form>

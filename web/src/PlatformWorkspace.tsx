@@ -1,3 +1,4 @@
+import { PayoutFilterSelect } from "./PayoutFilterSelect";
 import { PlatformPayoutOrders, initialPayoutFilters } from "./PlatformPayoutOrders";
 import { PlatformCollectionOrders } from "./PlatformCollectionOrders";
 import { OrderEvidence } from "./OrderEvidence";
@@ -7,7 +8,7 @@ import { ApiError, request } from "./api";
 import type { Provider } from "./ChannelIdentity";
 import { PaymentStatusBadge } from "./CollectionEvents";
 import { Dialog } from "./Dialog";
-import { LanguageSelect, useLocale } from "./locale";
+import { languages, LanguageSelect, resolveLocale, useLocale } from "./locale";
 import { Details, LoadState, useWorkspaceData, WorkspaceTable } from "./WorkspaceInventoryUI";
 
 import { SiteCards, SiteExplanation, type SiteCard } from "./SiteCards";
@@ -119,7 +120,7 @@ export function PlatformWorkspace({ logo }: { logo: ReactNode }) {
 export function PlatformConsole({ logo, session, signOut, initialPage = "Overview" }: {
   logo: ReactNode; session: PlatformSession; signOut: (notice?: string) => void; initialPage?: Page;
 }) {
-  const { t, locale } = useLocale();
+  const { t, locale, setLocale } = useLocale();
   const [orderTarget, setOrderTarget] = useState<OrderTarget>();
   const [focusDifferences, setFocusDifferences] = useState(false);
   const [focusBindings, setFocusBindings] = useState(false);
@@ -189,7 +190,9 @@ export function PlatformConsole({ logo, session, signOut, initialPage = "Overvie
       <button className="secondary disconnect" onClick={() => void logout()} disabled={signingOut} aria-label={t("Sign out")}>
         <ArrowLeft size={16} /><span>{t("Sign out")}</span>
       </button>
-      <LanguageSelect />
+      {page === "Payouts" ? <PayoutFilterSelect id="flowxpay-language" label={t("Language")}
+        options={Object.entries(languages).map(([value, label]) => ({ value, label }))}
+        value={locale} onChange={value => setLocale(resolveLocale(value))} /> : <LanguageSelect />}
     </header>
     <nav className="nav" aria-label={t("Platform operations")}>
       {productionOperations ? <>
@@ -391,10 +394,16 @@ function PlatformReports({ session, merchant, page, selectMerchant, configure, t
         } : undefined} />
     </section>}
   </div>}</LoadState>
-    {order && <Dialog drawer title={t(page === "Payouts" ? "Payout details" : "Payment details")} close={() => setOrder(undefined)}>
+    {order && <Dialog drawer={page !== "Payouts"} className={page === "Payouts" ? "payout-receipt" : undefined} title={t(page === "Payouts" ? "Payout details" : "Payment details")} close={() => setOrder(undefined)}>
+      {page === "Payouts" && <div className="payout-receipt-total">
+        <div><span>{t("Amount")}</span><strong>{orderAmount(order)}</strong></div>
+        <PaymentStatusBadge payment={order} payout />
+      </div>}
       <Details fields={[
         [t("Merchant ID"), order.merchant], [t("Platform reference"), order.id], [t("Merchant reference"), order.reference],
-        [t("Amount"), orderAmount(order)], [t("Status"), <PaymentStatusBadge payment={order} payout={page === "Payouts"} />],
+        ...(page === "Payouts" ? [] : [
+          [t("Amount"), orderAmount(order)], [t("Status"), <PaymentStatusBadge payment={order} />],
+        ] as [string, ReactNode][]),
         [t("Applicability"), [order.market, order.currency, t(order.method ?? "")].filter(Boolean).join(" · ")],
         [t(order.account_id ? "Account ID" : "Channel ID"), order.channel_id ?? order.account_id ?? "—"], [t("Created"), dateTime(order.created_at)],
         [t("Updated"), order.updated_at ? dateTime(order.updated_at) : "—"],

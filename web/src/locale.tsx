@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import { messages } from "./messages";
 
-const languages = {
+export const languages = {
   "en-US": "English",
   "zh-CN": "简体中文",
 };

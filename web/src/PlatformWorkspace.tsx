@@ -200,7 +200,7 @@ export function PlatformConsole({ logo, session, signOut, demoLinks, initialPage
       aria-current={name === page ? "page" : undefined} onClick={() => {
         setTarget(undefined); setOrderTarget(undefined); setFocusBindings(false); setFocusDifferences(false); setPage(name);
       }}>
-      <Icon size={21} aria-hidden="true" />{t(productionOperations && name === "Channel accounts" ? "Merchant channel assignments" : name)}
+      <Icon size={21} aria-hidden="true" />{t(name === "Payouts" ? "Payout orders" : productionOperations && name === "Channel accounts" ? "Merchant channel assignments" : name)}
     </button>;
   }
 

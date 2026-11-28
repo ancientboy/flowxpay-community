@@ -1,6 +1,6 @@
 import { PlatformOrderSummary } from "./PlatformOrderSummary";
 import { PayoutFilterSelect } from "./PayoutFilterSelect";
-import { ArrowUpRight, MagnifyingGlass } from "@phosphor-icons/react";
+import { Eye, MagnifyingGlass } from "@phosphor-icons/react";
 import { collectionStatuses, PaymentStatusBadge } from "./CollectionEvents";
 import { useLocale } from "./locale";
 import { payoutStatuses } from "./Payouts";
@@ -27,13 +27,6 @@ type Props = {
   openOrder: (order: PlatformOrder) => void;
 };
 
-const payoutTabs = [
-  { status: "", label: "All payouts", color: "total" },
-  { status: "succeeded", label: "Succeeded", color: "success" },
-  { status: "pending_confirmation", label: "Pending confirmation", color: "pending" },
-  { status: "failed", label: "Failed", color: "failed" },
-];
-
 function utcDay(timestamp: string) {
   return new Date(timestamp).toISOString().slice(0, 10);
 }
@@ -48,13 +41,6 @@ export function PlatformOrderLedger({ payout, orders, merchants, merchant, onMer
   const rows = scope.filter(order => !filters.status || filters.status === displayStatus(order));
   const statuses = payout ? payoutStatuses : collectionStatuses;
   const statusLabel = (value: string) => t(statuses[value] ?? value);
-  const summaries = payout ? payoutTabs : [
-    { status: "", label: "All collections", color: "total" },
-    { status: "succeeded", label: "Paid", color: "success" },
-    { status: "requires_action", label: "Awaiting payment", color: "pending" },
-    { status: "review", label: "Payment review pending", color: "review" },
-    { status: "failed", label: "Failed", color: "failed" },
-  ];
   const merchantNames = new Map(merchants.map(item => [item.id, item.name]));
   const options = (values: string[], selected: string) => [...new Set([...values, selected].filter(Boolean))].sort();
   const change = (field: keyof Filters, value: string) => setFilters({ ...filters, [field]: value });
@@ -73,17 +59,11 @@ export function PlatformOrderLedger({ payout, orders, merchants, merchant, onMer
       <span>{t("Pending confirmation")} · {riskFilter}</span>
       <button className="secondary" type="button" onClick={clearRisk}>{t("Clear")}</button>
     </div>}
-    <PlatformOrderSummary rows={rows} scope={scope.map(order => ({...order, status: displayStatus(order)}))} isoScale={productionOperations} statusLabel={statusLabel}
-      label={(filters.status ? statusLabel(filters.status) + " · " : "") + t(payout ? "Payout volume" : "Collection order amount")} />
-    <section className={payout ? "payout-ledger" : "payout-ledger collection-ledger"} aria-labelledby="payout-list-title">
+    <PlatformOrderSummary rows={scope} selected={filters.status} payout={payout}
+      onSelect={value => change("status", value)} isoScale={productionOperations} />
+    <section className="payout-ledger" aria-labelledby="payout-list-title">
       <div className="payout-ledger-head"><h2 id="payout-list-title">{zh ? "订单明细" : "Order details"}</h2>
         <span role="status">{zh ? "共 " + rows.length + " 笔" : rows.length + " orders"}</span></div>
-      <div className="payout-tabs" role="group" aria-label={t("Status")}>
-        {summaries.map(({status, label, color}) => <button key={label} className={"payout-tab " + color} type="button"
-          aria-pressed={filters.status === status} onClick={() => change("status", status)}>
-          {t(label)} <span>{status ? scope.filter(o => displayStatus(o) === status).length : scope.length}</span>
-        </button>)}
-      </div>
       <form className="payout-tools" onSubmit={e => { e.preventDefault(); applySearch(search.trim()); }}>
         <label>{zh ? "订单号" : "Order reference"}
           <span className="payout-search-input"><MagnifyingGlass size={17} aria-hidden="true" />
@@ -104,22 +84,20 @@ export function PlatformOrderLedger({ payout, orders, merchants, merchant, onMer
           <button type="button" className="text-button" disabled={!hasFilters} onClick={reset}>{zh ? "重置" : "Reset"}</button></div>
       </form>
       {rows.length ? <table className="payout-table"><thead><tr>
-        <th scope="col">{t("Merchant")}</th><th scope="col">{t("Platform reference")}</th>
+        <th scope="col">{t("Merchant reference")}</th><th scope="col">{t("Merchant")}</th>
         <th scope="col" className="amount">{t("Amount")}</th><th scope="col">{t("Status")}</th>
         <th scope="col">{zh ? "创建时间 · UTC" : "Created · UTC"}</th><th scope="col"><span className="payout-sr">{t(payout ? "Payout details" : "Payment details")}</span></th>
       </tr></thead><tbody>{rows.map(order => {
         const timestamp = new Date(order.created_at).toISOString();
         return <tr key={order.id}>
-          <td className="merchant"><div className="payout-merchant">
-            <span className="merchant-initial" aria-hidden="true">{(merchantNames.get(order.merchant) ?? order.merchant).slice(0,1)}</span>
-            <div><button className="text-button" onClick={() => openOrder(order)}>{merchantNames.get(order.merchant) ?? order.merchant}</button>
-              <small>{order.reference || order.merchant}</small></div></div></td>
-          <td className="ref"><button className="text-button" onClick={() => openOrder(order)}>{order.id}</button><small>{order.merchant}</small></td>
+          <td className="ref"><button className="text-button" type="button" onClick={() => openOrder(order)}>{order.reference || order.id}</button>
+            {order.reference && <small>{order.id}</small>}</td>
+          <td className="merchant">{merchantNames.get(order.merchant) ?? order.merchant}<small>{order.merchant}</small></td>
           <td className="amount">{exactMoney(String(order.amount_minor), order.currency, productionOperations)}</td>
           <td className="status"><PaymentStatusBadge payout={payout} payment={order} /></td>
           <td className="created"><time dateTime={order.created_at}>{timestamp.slice(0, 10)}<small>{timestamp.slice(11, 19)} UTC</small></time></td>
           <td className="inspect"><button type="button" aria-label={t(payout ? "Payout details" : "Payment details") + " · " + order.id} onClick={() => openOrder(order)}>
-            <ArrowUpRight size={17} /></button></td>
+            <Eye size={17} /></button></td>
         </tr>;
       })}</tbody></table> : <p className="payout-empty">{t(payout ? "No payouts match your search." : "No payments match your search.")}</p>}
     </section>

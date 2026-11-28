@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { PlatformOrderSummary } from "./PlatformOrderSummary";
-import { collectionStatuses, PaymentStatusBadge } from "./CollectionEvents";
+import { PaymentStatusBadge } from "./CollectionEvents";
 import { useLocale } from "./locale";
 import { platformAPI } from "./platformEnvironment";
 import { LoadState, useWorkspaceData, WorkspaceTable } from "./WorkspaceInventoryUI";
@@ -27,10 +27,15 @@ export function PlatformCollectionOrders({ merchant, initialReference, token, re
   const [filters, setFilters] = useState(draft);
   const [cursors, setCursors] = useState([""]);
   const params = new URLSearchParams({ merchant, ...filters, after: cursors.at(-1) ?? "" });
-  const state = useWorkspaceData<CollectionPage>(platformAPI + "/collection-orders?" + params, token);
+  const collectionPath = platformAPI + "/collection-orders?";
+  const cardParams = new URLSearchParams({ merchant, ...filters, status: "", after: "" });
+  const summary = useWorkspaceData<CollectionPage>(collectionPath + cardParams, token);
+  const separateList = Boolean(filters.status || cursors.length > 1);
+  const filtered = useWorkspaceData<CollectionPage>(separateList ? collectionPath + params : undefined, token);
+  const state = separateList ? filtered : summary;
   const [channels, setChannels] = useState<CollectionPage["channels"]>([]);
   useEffect(() => { if (state.data) setChannels(state.data.channels); }, [state.data]);
-  useEffect(() => { if (revision > 0) state.refresh(); }, [revision]);
+  useEffect(() => { if (revision > 0) { summary.refresh(); if (separateList) filtered.refresh(); } }, [revision]);
   const field = (key: keyof typeof draft, value: string) => setDraft(previous => ({ ...previous, [key]: value }));
   const noticeLabels: Record<string, string> = {
     none: l("暂无事件", "No event"), unconfigured: l("未配置", "Unconfigured"),
@@ -47,26 +52,19 @@ export function PlatformCollectionOrders({ merchant, initialReference, token, re
     l("结算 / 通知", "Settlement / notification"), t("Created"), l("查证", "Evidence")];
 
   const rows = state.data?.rows;
-  const tabs = ["", "succeeded", "requires_action", "review", "failed"];
-  const statusLabel = (status: string) => t(collectionStatuses[status] ?? status);
 
   return <section className="payout-book collection-report">
-    <p className="payout-scope">{l("按币种汇总当前页的代收订单金额。净入账以订单记录为准。", "Amounts are grouped by currency for this page. Net credits are shown per order.")}</p>
-    {rows && <PlatformOrderSummary rows={rows} scope={rows.map(row => row.checkout_needs_review ? {...row, status: "review"} : row)}
-      label={t("Collection order amount")} statusLabel={statusLabel} isoScale />}
-    <div className="payout-ledger collection-ledger">
+    <p className="payout-scope">{l("金额卡片按币种汇总其他筛选条件下的首屏订单。净入账以订单记录为准。", "Cards summarize the first page matching the other filters, by currency. Net credits are shown per order.")}</p>
+    {summary.data && <PlatformOrderSummary rows={summary.data.rows} selected={filters.status} isoScale onSelect={status => {
+      if (filters.status === status) return;
+      const next = { ...filters, status };
+      filtered.reload(); setDraft(next); setFilters(next); setCursors([""]);
+    }} />}
+    <div className="payout-ledger">
     <div className="payout-ledger-head"><h2>{title}</h2>{rows && <span>{l("本页", "This page")} · {rows.length}</span>}</div>
-    <div className="payout-tabs" role="group" aria-label={t("Status")}>
-      {tabs.map(status => <button type="button" key={status} className="payout-tab" aria-pressed={filters.status === status}
-        onClick={() => {
-          if (filters.status === status) return;
-          const next = { ...filters, status };
-          setDraft(next); setFilters(next); setCursors([""]); state.reload();
-        }}>{status ? statusLabel(status) : t("All collections")}</button>)}
-    </div>
     <form className="platform-finance-filters period-filters" onSubmit={event => {
       event.preventDefault();
-      state.reload();
+      summary.reload(); filtered.reload();
       setCursors([""]);
       setFilters({ ...draft, reference: draft.reference.trim() });
     }}>
@@ -98,7 +96,7 @@ export function PlatformCollectionOrders({ merchant, initialReference, token, re
       <button className="secondary" type="button" onClick={() => {
         setDraft(empty);
         setFilters(empty);
-        state.reload();
+        summary.reload(); filtered.reload();
         setCursors([""]);
       }}>{t("Clear")}</button>
     </form>
@@ -122,10 +120,10 @@ export function PlatformCollectionOrders({ merchant, initialReference, token, re
         </tr>)}
       </WorkspaceTable> : <p className="muted empty">{t("No payments match your search.")}</p>}
       {(cursors.length > 1 || page.next) && <div className="header-actions period-presets">
-        <button className="secondary" type="button" disabled={cursors.length === 1} onClick={() => { state.reload(); setCursors(previous => previous.slice(0, -1)); }}>{l("上一页", "Previous")}</button>
+        <button className="secondary" type="button" disabled={cursors.length === 1} onClick={() => { filtered.reload(); setCursors(previous => previous.slice(0, -1)); }}>{l("上一页", "Previous")}</button>
         <button className="secondary" type="button" disabled={!page.next} onClick={() => {
           if (page.next) {
-            state.reload();
+            filtered.reload();
             setCursors([...cursors, page.next.created_at + "|" + page.next.id]);
           }
         }}>{l("下一页", "Next")}</button>

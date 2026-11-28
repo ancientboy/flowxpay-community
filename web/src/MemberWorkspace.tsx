@@ -3,9 +3,10 @@ import { MerchantHomeTasks } from "./MerchantHomeTasks";
 import {ProductionFunds} from "./ProductionFunds";
 import {MerchantEvents} from "./MerchantEvents";
 import type { WorkspaceCapabilities } from "./memberEnvironment";
-import { LanguageSelect, useLocale } from "./locale";
+import { ConsoleShell } from "./ConsoleShell";
+import { useLocale } from "./locale";
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { ArrowLeft, BookOpen, Buildings, PlayCircle, GearSix, Plugs, Bank, ClipboardText, Key, GitBranch, WarningCircle, House, CreditCard, ChartLineUp } from "@phosphor-icons/react";
+import { BookOpen, Buildings, PlayCircle, GearSix, Plugs, Bank, ClipboardText, Key, GitBranch, WarningCircle, House, CreditCard, ChartLineUp } from "@phosphor-icons/react";
 import { PaymentDemos } from "./PaymentDemos";
 import { MerchantDocs } from "./MerchantDocs";
 import { Chargebacks } from "./Chargebacks";
@@ -47,8 +48,6 @@ const navGroups: { zh: string; en: string; pages: MerchantPage[] }[] = [
   { zh: "设置", en: "Settings", pages: ["Team & security"] },
 ];
 
-const mobilePrimary: MerchantPage[] = ["Overview", "Payments", "Payouts", "Settlement"];
-
 const roles = { admin: "Merchant admin", operator: "Operator", viewer: "Viewer" };
 export type { Site } from "./SiteCards";
 export interface ChannelAccount {
@@ -56,11 +55,12 @@ export interface ChannelAccount {
   enabled: boolean; routing_standby: boolean; platform_channel_id?: string; platform_channel_name?: string;
 }
 
-export function MemberWorkspace({ logo, token, member, signedOut, endSession,
+export function MemberWorkspace({ logo, token, member, signedOut, endSession, demoLinks,
   environment = "Sandbox", capabilities }: {
   environment?: "Production" | "Sandbox";
   capabilities: WorkspaceCapabilities;
   endSession?: () => Promise<void>;
+  demoLinks?: ReactNode;
   logo: ReactNode;
   token: string;
   member: MemberSession;
@@ -75,7 +75,6 @@ export function MemberWorkspace({ logo, token, member, signedOut, endSession,
   const [orderRef, setOrderRef] = useState("");
   const [pendingPayouts, setPendingPayouts] = useState(false);
   const mainHeading = useRef<HTMLHeadingElement>(null);
-  const moreMenu = useRef<HTMLDetailsElement>(null);
   const previousPage = useRef(page);
   useEffect(() => {
     if (previousPage.current !== page) {
@@ -108,7 +107,6 @@ export function MemberWorkspace({ logo, token, member, signedOut, endSession,
   }
 
   function go(title: MerchantPage, order = "", pending = false) {
-    if (moreMenu.current) moreMenu.current.open = false;
     setOrderRef(order);
     setPendingPayouts(pending);
     setStatementAccount("");
@@ -117,7 +115,8 @@ export function MemberWorkspace({ logo, token, member, signedOut, endSession,
   }
 
   function labelFor(title: MerchantPage) {
-    return title === "API documentation" ? t("API docs")
+    return title === "Payouts" ? t("Payout orders") : title === "Payments" ? t("Collection orders")
+      : title === "API documentation" ? t("API docs")
       : production && title === "Channel accounts" ? (zh ? "通道与费率" : "Channels & rates")
       : title === "Start integration" ? (zh ? "开始接入" : "Start integration")
       : title === "Business reports" ? (zh ? "经营报表" : "Business reports") : t(title);
@@ -132,17 +131,7 @@ export function MemberWorkspace({ logo, token, member, signedOut, endSession,
     </button>;
   }
 
-  return <div className="app-shell member-shell">
-    {logo}
-    <header className="topbar">
-      <div className="identity"><span className="muted small">{member.merchant_id} · {t(roles[member.role])}</span>
-        <strong className="wrap">{member.name}</strong></div>
-      <span className="tag blue"><i aria-hidden="true" />{t(environment)}</span>
-      <button className="secondary disconnect" type="button" onClick={() => void signOut()}
-        disabled={signingOut} aria-label={t("Sign out")}><ArrowLeft size={16} /><span>{t("Sign out")}</span></button>
-      <LanguageSelect />
-    </header>
-    <nav className={"nav" + (production ? " merchant-desktop-nav" : "")} aria-label={t("Merchant workspace")}>
+  const navItems = <>
       {production ? <>
         {navigation("Overview")}
         {navGroups.map(group => <div key={group.en} className="nav-group">
@@ -150,14 +139,12 @@ export function MemberWorkspace({ logo, token, member, signedOut, endSession,
           {group.pages.map(navigation)}
         </div>)}
       </> : pages.filter(({ title }) => title !== "Start integration" && title !== "Business reports").map(({title})=>navigation(title))}
-    </nav>
-    {production && <nav className="nav merchant-mobile-nav" aria-label={t("Merchant workspace")}>
-      <div className="merchant-mobile-primary">{mobilePrimary.map(navigation)}</div>
-      <details ref={moreMenu} className="merchant-mobile-more">
-        <summary>{zh ? "更多" : "More"}{!mobilePrimary.includes(page) ? " · " + labelFor(page) : ""}</summary>
-        <div>{navGroups.flatMap(group => group.pages).filter(title => !mobilePrimary.includes(title)).map(navigation)}</div>
-      </details>
-    </nav>}
+  </>;
+  return <ConsoleShell workspace="merchant" title={t("Merchant workspace")} accountLabel={t("Merchant workspace")}
+    accountName={member.name} logo={logo} header={<>{demoLinks ?? <strong>{t("Merchant workspace")}</strong>}
+      <span className="muted small">{member.merchant_id} · {t(roles[member.role])}</span></>}
+    environment={demoLinks ? (zh ? "只读演示" : "Read-only demo") : t(environment)}
+    navigation={navItems} signingOut={signingOut} logout={signOut}>
     <main className="workspace">
       <div className="page-heading heading"><h1 ref={mainHeading} tabIndex={-1}>{labelFor(page)}</h1></div>
       {logoutError && <p className="error" role="alert">{t(logoutError)}</p>}
@@ -201,7 +188,7 @@ export function MemberWorkspace({ logo, token, member, signedOut, endSession,
         <SiteFacts site={selectedSite} />
       </Dialog>}
     </main>
-  </div>;
+  </ConsoleShell>;
 }
 
 function MerchantIntegration({ token, admin, demos, go }: { token: string; admin: boolean; demos: boolean; go: (page: MerchantPage) => void }) {

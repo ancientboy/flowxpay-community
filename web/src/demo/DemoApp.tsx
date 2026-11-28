@@ -44,7 +44,7 @@ export function App() {
       {!view && <LanguageSelect />}
     </header>
     {view === "operator" ? <PlatformConsole demoLinks={demoLinks} initialPage={params.get("page") === "collections" ? "Payments" : params.get("page") === "payouts" ? "Payouts" : "Overview"} logo={brand()} session={{ token, role: "viewer", user: "Demo platform operator" }} signOut={home} />
-      : view === "merchant" ? <MemberWorkspace logo={brand()} capabilities={capabilities} token={token} member={demoMember} signedOut={home} />
+      : view === "merchant" ? <MemberWorkspace demoLinks={demoLinks} logo={brand()} capabilities={capabilities} token={token} member={demoMember} signedOut={home} />
       : <main className="community-demo-home">
         <h1>{title}</h1>
         <p className="muted">{zh ? "进入社区版后台，查看示例商户、上游通道、订单、费率和对账。完整操作可在本地沙盒使用。"

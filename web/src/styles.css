@@ -779,16 +779,16 @@ dialog:has(> .payment-detail) { padding-top: 0; }
   border: 0; border-radius: 7px; background: transparent; color: var(--muted);
 }
 .sidebar-toggle:hover { background: var(--sidebar-selected, #eff0f2); color: var(--navy); }
-.platform-shell { --sidebar-selected: #eff0f2; }
-.platform-shell[data-payout-theme="dark"] { --sidebar-selected: #343438; }
-.platform-shell .nav button[aria-current="page"] {
+.console-shell { --sidebar-selected: #eff0f2; }
+.console-shell[data-payout-theme="dark"] { --sidebar-selected: #343438; }
+.console-shell .nav button[aria-current="page"] {
   background: var(--sidebar-selected); color: var(--navy); font-weight: 660; box-shadow: none;
 }
-.platform-shell .nav[hidden] { display: none; }
-.platform-shell[data-sidebar-collapsed="true"] > .workspace { grid-column: 1 / -1; }
+.console-shell .nav[hidden] { display: none; }
+.console-shell[data-sidebar-collapsed="true"] > .workspace { grid-column: 1 / -1; }
 @media (max-width: 680px) {
   .platform-brand { min-height: 52px; padding-inline: 16px; }
   .platform-brand .brand { width: 136px; }
   .sidebar-toggle { width: 44px; height: 44px; }
-  .platform-shell[data-sidebar-collapsed="true"] { grid-template-rows: auto auto 1fr; }
+  .console-shell[data-sidebar-collapsed="true"] { grid-template-rows: auto auto 1fr; }
 }

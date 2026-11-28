@@ -1,3 +1,4 @@
+import { PlatformOrderSummary, matchesOrderStatus } from "./PlatformOrderSummary";
 import { useLocale } from "./locale";
 import { useRef, useState, type ReactNode } from "react";
 import { ApiError, request, type OrderFee } from "./api";
@@ -50,7 +51,10 @@ function PayoutOrders({ state, sandbox, refresh, find, select, actions }: {
   actions?: ReactNode;
 }) {
   const { t, money } = useLocale();
-  return <section className="workspace-panel">
+  const [status, setStatus] = useState("");
+  return <>
+    {state.data && !state.error && <PlatformOrderSummary rows={state.data} payout selected={status} onSelect={setStatus} isoScale={false} />}
+    <section className="workspace-panel">
     <div className="heading panel-heading"><h2>{t(sandbox ? "Sandbox payout orders" : "Payout orders")}</h2>
       <div className="header-actions payout-actions">
         <button className="secondary" onClick={refresh}>{t("Refresh payouts")}</button>
@@ -59,21 +63,25 @@ function PayoutOrders({ state, sandbox, refresh, find, select, actions }: {
     </div>
     <form className="payout-search" onSubmit={event => {
       event.preventDefault();
+      setStatus("");
       find(String(new FormData(event.currentTarget).get("reference") ?? "").trim());
     }}>
       <label htmlFor="payout-find">{t("Order reference or ID")}</label>
       <input id="payout-find" name="reference" maxLength={80} pattern="[a-zA-Z0-9._:\-]{1,80}" />
       <button className="secondary">{t("Find payouts")}</button>
     </form>
-    <LoadState state={state} label={t("payout orders")}>{items => items.length ?
+    <LoadState state={state} label={t("payout orders")}>{orders => {
+      const items = orders.filter(row => matchesOrderStatus(row, status, true));
+      return items.length ?
       <WorkspaceTable label={t("Payout orders")} columns={[t("Merchant reference"), t("Payout ID"), t("Amount"), t("Status")]}>
         {items.map(item => <tr key={item.id}>
           <td><button className="text-button wrap" onClick={() => select(item.id)}>{item.merchant_reference}</button></td>
           <td className="resource-id order-number">{item.id}</td>
           <td>{money(item.amount_minor, item.currency)}</td><td>{t(payoutStatuses[item.status] ?? item.status)}</td>
         </tr>)}
-      </WorkspaceTable> : <p className="muted empty">{t("No payouts found.")}</p>}</LoadState>
-  </section>;
+      </WorkspaceTable> : <p className="muted empty">{t("No payouts found.")}</p>;}}</LoadState>
+    </section>
+  </>;
 }
 
 function PayoutFacts({ item, children }: { item: PayoutOrder; children: [string, ReactNode][] }) {

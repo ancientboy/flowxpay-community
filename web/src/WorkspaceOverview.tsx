@@ -1,3 +1,4 @@
+import { PlatformOrderSummary, matchesOrderStatus } from "./PlatformOrderSummary";
 import { PeriodReport } from "./PeriodReport";
 import { MerchantPaymentFunds } from "./MerchantPaymentFunds";
 import { memberPortal } from "./memberEnvironment";
@@ -127,7 +128,7 @@ function OverviewMetrics({ token, currency, days, reconciliation }: { token: str
   const { t, exactMoney, locale } = useLocale();
   const state = useWorkspaceData<OverviewTotals>(base + "/overview?" + new URLSearchParams({ currency, days }), token);
   const percent = new Intl.NumberFormat(locale, { style: "percent", maximumFractionDigits: 1 });
-  return <LoadState state={state} label={t("overview")}>{data => <div className="overview-metrics">
+  return <LoadState state={state} label={t("overview")}>{data => <div className="overview-metrics platform-metrics">
     <div><span><ChartLineUp size={19} aria-hidden="true" />{t("Successful collection volume")}</span><strong>{exactMoney(data.gross_minor, currency)}</strong></div>
     <div><span><CreditCard size={19} aria-hidden="true" />{t("Paid orders / total orders")}</span><strong>{data.paid_orders} / {data.orders}</strong>
       {data.orders > 0 && <small>{t("Success rate")} · {percent.format(data.paid_orders / data.orders)}</small>}</div>
@@ -148,8 +149,7 @@ export function WorkspacePayments({ token, openPayments, initialOrder = "" }: { 
     autoOpen.current = false;
     setQuery(reference.trim());
   }
-  return <section className="workspace-panel member-payments">
-    <div className="heading panel-heading">
+  const heading = <div className="heading panel-heading">
       <h2>{t(recent ? "Recent transactions" : "Payment records")}</h2>
       {openPayments && <button className="text-button panel-link" onClick={openPayments}>{t("View all payments")}<ArrowRight size={16} aria-hidden="true" /></button>}
       {!recent && <form className="overview-filters payment-reference-filter" onSubmit={search}>
@@ -158,14 +158,14 @@ export function WorkspacePayments({ token, openPayments, initialOrder = "" }: { 
         <button className="secondary">{t("Search")}</button>
         {query && <button className="secondary" type="button" onClick={() => { autoOpen.current = false; setReference(""); setQuery(""); }}>{t("Clear")}</button>}
       </form>}
-    </div>
-    <WorkspacePaymentRows key={query} token={token} recent={recent} query={query} autoOpen={autoOpen.current} />
-  </section>;
+    </div>;
+  return <WorkspacePaymentRows key={query} token={token} recent={recent} query={query} heading={heading} autoOpen={autoOpen.current} />;
 }
 
-function WorkspacePaymentRows({ token, recent, query, autoOpen }: { token: string; recent: boolean; query: string; autoOpen: boolean }) {
+function WorkspacePaymentRows({ token, recent, query, autoOpen, heading }: { token: string; recent: boolean; query: string; autoOpen: boolean; heading: React.ReactNode }) {
   const { t, money, dateTime, localizedLink } = useLocale();
   const [selected, setSelected] = useState<Payment>();
+  const [status, setStatus] = useState("");
   const params = new URLSearchParams(recent ? { recent: "1" } : { reference: query });
   const state = useWorkspaceData<Payment[]>(base + "/payments?" + params, token);
   const opened = useRef(false);
@@ -175,7 +175,11 @@ function WorkspacePaymentRows({ token, recent, query, autoOpen }: { token: strin
     setSelected(state.data.find(row => row.id === query));
   }, [autoOpen, query, state.data]);
   return <>
-    <LoadState state={state} label={t("payments")}>{rows => rows.length ?
+    {!recent && state.data && !state.error && <PlatformOrderSummary rows={state.data} selected={status} onSelect={setStatus} isoScale={false} />}
+    <section className="workspace-panel member-payments">{heading}
+    <LoadState state={state} label={t("payments")}>{items => {
+      const rows = items.filter(row => matchesOrderStatus(row, status));
+      return rows.length ?
       <WorkspaceTable label={t("Payment list")} columns={[t("Reference"), t("Amount"), t("Status"), t("Created")]}>
         {rows.map(payment => <tr key={payment.id}>
           <td><button className="text-button" onClick={() => setSelected(payment)}>{payment.merchant_reference}</button></td>
@@ -183,7 +187,8 @@ function WorkspacePaymentRows({ token, recent, query, autoOpen }: { token: strin
           <td><PaymentStatusBadge payment={payment} /></td>
           <td>{dateTime(payment.created_at)}</td>
         </tr>)}
-      </WorkspaceTable> : <p className="muted empty">{t("No payments match your search.")}</p>}</LoadState>
+      </WorkspaceTable> : <p className="muted empty">{t("No payments match your search.")}</p>;}}</LoadState>
+    </section>
     {selected && <Dialog drawer title={t("Payment details")} close={() => setSelected(undefined)}>
       {memberPortal && <MerchantPaymentFunds key={selected.id} id={selected.id} token={token} />}
       <Details fields={[

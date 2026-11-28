@@ -1,14 +1,14 @@
-import { PayoutFilterSelect } from "./PayoutFilterSelect";
+import { ConsoleShell } from "./ConsoleShell";
 import { PlatformOrderLedger, initialOrderFilters } from "./PlatformOrderLedger";
 import { PlatformCollectionOrders } from "./PlatformCollectionOrders";
 import { OrderEvidence } from "./OrderEvidence";
 import { useEffect, useLayoutEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
-import { SignOut, Sun, Translate, UserCircle, Buildings, CreditCard, GearSix, House, Moon, Plugs, SidebarSimple, Stack, ChartLineUp, Users } from "@phosphor-icons/react";
+import { Buildings, CreditCard, GearSix, House, Plugs, Stack, ChartLineUp, Users } from "@phosphor-icons/react";
 import { ApiError, request } from "./api";
 import type { Provider } from "./ChannelIdentity";
 import { PaymentStatusBadge } from "./CollectionEvents";
 import { Dialog } from "./Dialog";
-import { languages, LanguageSelect, resolveLocale, useLocale } from "./locale";
+import { LanguageSelect, useLocale } from "./locale";
 import { Details, LoadState, useWorkspaceData } from "./WorkspaceInventoryUI";
 
 import { SiteCards, SiteExplanation, type SiteCard } from "./SiteCards";
@@ -22,9 +22,6 @@ import { PlatformTeam } from "./PlatformTeam";
 
 import { platformAPI as api, platformEnvironment, productionOperations } from "./platformEnvironment";
 import { ProductionPlatformAccess } from "./ProductionPlatformAccess";
-
-const sidebarKey = "flowxpay.platform.sidebar.collapsed";
-const platformThemeKey = "flowxpay.platform.payouts.theme";
 
 const navigation = [
   ["Overview", House], ["Upstream channels", Stack], ["Merchants", Buildings], ["Payments", CreditCard], ["Payouts", CreditCard], ["Platform finance", ChartLineUp], ["Channel accounts", Plugs], ["Operations", GearSix], ["Platform team", Users],
@@ -121,54 +118,12 @@ export function PlatformWorkspace({ logo }: { logo: ReactNode }) {
 export function PlatformConsole({ logo, session, signOut, demoLinks, initialPage = "Overview" }: {
   logo: ReactNode; session: PlatformSession; signOut: (notice?: string) => void; initialPage?: Page; demoLinks?: ReactNode;
 }) {
-  const { t, locale, setLocale } = useLocale();
+  const { t, locale } = useLocale();
   const [orderTarget, setOrderTarget] = useState<OrderTarget>();
   const [focusDifferences, setFocusDifferences] = useState(false);
   const [focusBindings, setFocusBindings] = useState(false);
   const [page, setPage] = useState<Page>(initialPage);
   const orderPage = page === "Payouts" || page === "Payments";
-  const [darkTheme, setDarkTheme] = useState(() => {
-    const theme = new URLSearchParams(location.search).get("theme");
-    if (theme === "light" || theme === "dark") return theme === "dark";
-    try { return localStorage.getItem(platformThemeKey) === "dark"; }
-    catch { return false; }
-  });
-
-  function toggleTheme() {
-    const next = !darkTheme;
-    setDarkTheme(next);
-    const url = new URL(location.href);
-    if (url.searchParams.has("theme")) {
-      url.searchParams.delete("theme");
-      history.replaceState(history.state, "", url);
-    }
-    try { localStorage.setItem(platformThemeKey, next ? "dark" : "light"); }
-    catch { /* The selection still applies when browser storage is unavailable. */ }
-  }
-
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
-    try { return localStorage.getItem(sidebarKey) === "true"; }
-    catch { return false; }
-  });
-  const [narrow, setNarrow] = useState(() => window.matchMedia("(max-width: 680px)").matches);
-  const [mobileMenu, setMobileMenu] = useState(false);
-  useEffect(() => {
-    const query = window.matchMedia("(max-width: 680px)");
-    const resize = () => { setNarrow(query.matches); setMobileMenu(false); };
-    query.addEventListener("change", resize);
-    return () => query.removeEventListener("change", resize);
-  }, []);
-  const expanded = narrow ? mobileMenu : !sidebarCollapsed;
-  const sidebarLabel = t(expanded ? "Collapse navigation" : "Expand navigation");
-
-  function toggleSidebar() {
-    if (narrow) { setMobileMenu(!mobileMenu); return; }
-    const next = !sidebarCollapsed;
-    setSidebarCollapsed(next);
-    try { localStorage.setItem(sidebarKey, String(next)); }
-    catch { /* Keep the current selection in this session. */ }
-  }
-
   const [merchant, setMerchant] = useState("");
   const [target, setTarget] = useState<SiteTarget>();
   const [signingOut, setSigningOut] = useState(false);
@@ -208,15 +163,13 @@ export function PlatformConsole({ logo, session, signOut, demoLinks, initialPage
     const Icon = navigation.find(([id]) => id === name)![1];
     return <button key={name} className={name === page ? "active" : ""}
       aria-current={name === page ? "page" : undefined} onClick={() => {
-        setMobileMenu(false); setTarget(undefined); setOrderTarget(undefined); setFocusBindings(false); setFocusDifferences(false); setPage(name);
+        setTarget(undefined); setOrderTarget(undefined); setFocusBindings(false); setFocusDifferences(false); setPage(name);
       }}>
       <Icon size={21} aria-hidden="true" />{t(name === "Payouts" ? "Payout orders" : productionOperations && name === "Channel accounts" ? "Merchant channel assignments" : name)}
     </button>;
   }
 
-  const themeLabel = locale === "zh-CN" ? "深色模式" : "Dark mode";
-  const sidebar = <>
-    <nav id="platform-navigation" className="nav" aria-label={t("Platform operations")}>
+  const navItems = <>
       {productionOperations ? <>
         {navButton("Overview")}
         {operationsNav.map(group=><div className="nav-group" key={group.en}>
@@ -225,42 +178,11 @@ export function PlatformConsole({ logo, session, signOut, demoLinks, initialPage
         </div>)}
         {session.platformOwner && navButton("Platform team")}
       </> : navigation.filter(([name]) => name !== "Platform team").map(([name])=>navButton(name))}
-    </nav>
-    <div className="operator-account" role="group" aria-label={t("Platform account")}>
-      <div className="operator-profile"><UserCircle size={24} aria-hidden="true" />
-        <span title={session.user}>{session.user}</span>
-        <button className="operator-icon" type="button" title={t("Sign out")} aria-label={t("Sign out")}
-          disabled={signingOut} onClick={() => void logout()}><SignOut size={18} aria-hidden="true" /></button>
-      </div>
-      <div className="operator-preferences">
-        <Translate size={18} aria-hidden="true" />
-        <PayoutFilterSelect id="flowxpay-language" label={t("Language")}
-          options={Object.entries(languages).map(([value, label]) => ({ value, label }))}
-          value={locale} onChange={value => setLocale(resolveLocale(value))} />
-        <button className="operator-icon" type="button" role="switch" aria-checked={darkTheme}
-          aria-label={themeLabel} title={themeLabel} onClick={toggleTheme}>
-          {darkTheme ? <Sun size={18} aria-hidden="true" /> : <Moon size={18} aria-hidden="true" />}
-        </button>
-      </div>
-    </div>
   </>;
-  return <div className="app-shell member-shell platform-shell" data-sidebar-collapsed={narrow || sidebarCollapsed}
-    data-payout-theme={darkTheme ? "dark" : "light"} data-order-page={orderPage}>
-    <div className="platform-brand">
-      {logo}
-      <button type="button" className="sidebar-toggle" title={sidebarLabel} aria-label={sidebarLabel}
-        aria-controls={expanded || !narrow ? "platform-navigation" : undefined} aria-haspopup={narrow ? "dialog" : undefined}
-        aria-expanded={expanded} onClick={toggleSidebar}>
-        <SidebarSimple size={20} aria-hidden="true" />
-      </button>
-    </div>
-    <header className="topbar">
-      {demoLinks ?? <strong>{t("Platform operations")}</strong>}
-      <span className="tag blue">{demoLinks ? (locale === "zh-CN" ? "只读演示" : "Read-only demo") : t(platformEnvironment)}</span>
-    </header>
-    {narrow ? mobileMenu && <Dialog className="operator-menu" title={t("Platform operations")} close={() => setMobileMenu(false)}>
-      {sidebar}
-    </Dialog> : <aside className="operator-sidebar" hidden={sidebarCollapsed}>{sidebar}</aside>}
+  return <ConsoleShell workspace="platform" title={t("Platform operations")} accountLabel={t("Platform account")}
+    accountName={session.user} logo={logo} header={demoLinks ?? <strong>{t("Platform operations")}</strong>}
+    environment={demoLinks ? (locale === "zh-CN" ? "只读演示" : "Read-only demo") : t(platformEnvironment)}
+    navigation={navItems} orderPage={orderPage} signingOut={signingOut} logout={logout}>
     <main className="workspace">
       {logoutError && <p className="error" role="alert">{t("The platform session could not be closed.")}</p>}
       <div className="heading page-heading">
@@ -284,7 +206,7 @@ export function PlatformConsole({ logo, session, signOut, demoLinks, initialPage
             setPage(next.direction === "payout" ? "Payouts" : "Payments");
           }} target={target} signOut={signOut} focusBindings={focusBindings} openFinance={(bindings = false, differences = false) => { setFocusBindings(bindings); setFocusDifferences(differences); if (differences) setMerchant(""); setPage("Platform finance"); }} focusDifferences={focusDifferences} />}
     </main>
-  </div>;
+  </ConsoleShell>;
 }
 
 function PlatformReports({ session, merchant, page, selectMerchant, configure, target, signOut, openFinance, focusBindings, focusDifferences, orderTarget, openOrders }: {

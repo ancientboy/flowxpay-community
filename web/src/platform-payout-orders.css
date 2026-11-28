@@ -219,19 +219,19 @@
 }
 
 /* Operator navigation and account preferences share one sidebar on all pages. */
-.platform-shell .operator-sidebar,
+.console-shell .operator-sidebar,
 .member-shell dialog.operator-menu[open] {
   display: flex; flex-direction: column; min-width: 0; background: var(--canvas); color: var(--navy);
 }
-.platform-shell .operator-sidebar {
+.console-shell .operator-sidebar {
   position: sticky; top: 76px; align-self: start; height: calc(100vh - 76px); height: calc(100dvh - 76px);
   border-inline-end: 1px solid var(--border);
 }
 @media (min-width: 681px) {
-  .platform-shell > :is(.platform-brand, .topbar) { position: sticky; top: 0; z-index: 2; }
+  .console-shell > :is(.platform-brand, .topbar) { position: sticky; top: 0; z-index: 2; }
 }
-.platform-shell .operator-sidebar[hidden] { display: none; }
-.platform-shell :is(.operator-sidebar, .operator-menu) > .nav {
+.console-shell .operator-sidebar[hidden] { display: none; }
+.console-shell :is(.operator-sidebar, .operator-menu) > .nav {
   flex: 1; min-height: 0; overflow-y: auto; border: none;
 }
 .operator-account { flex: none; border-top: 1px solid var(--border); margin: 0 12px; padding: 10px 0; }
@@ -243,34 +243,34 @@
 .operator-preferences .payout-filter-trigger { min-height: 34px; width: fit-content; max-width: 100%; gap: 4px; background: transparent; color: var(--muted); border: 0; padding: 0 4px; }
 .operator-preferences .payout-filter-trigger:hover { color: var(--navy); background: var(--raised); }
 .operator-preferences label { position: absolute; width: 1px; height: 1px; clip-path: inset(50%); overflow: hidden; }
-.platform-shell .topbar > .tag { margin-inline-start: auto; }
+.console-shell .topbar > .tag { margin-inline-start: auto; }
 
 /* Match the order ledger's surface, type and rules across the light console. */
-.platform-shell[data-order-page="false"] .page-heading { margin-bottom: clamp(16px,2vw,24px); }
-.platform-shell[data-payout-theme="light"][data-order-page="false"] .workspace {
+.console-shell[data-order-page="false"] .page-heading { margin-bottom: clamp(16px,2vw,24px); }
+.console-shell[data-payout-theme="light"][data-order-page="false"] .workspace {
   --section-inset: clamp(14px,2vw,20px);
   --section-rule: color-mix(in srgb, var(--border) 64%, var(--surface));
 }
-.platform-shell[data-payout-theme="light"][data-order-page="false"] .workspace-panel {
+.console-shell[data-payout-theme="light"][data-order-page="false"] .workspace-panel {
   border-radius: 14px; border-color: var(--border); box-shadow: 0 3px 12px rgb(22 52 68 / 3%);
 }
-.platform-shell[data-payout-theme="light"] .workspace-panel > .panel-heading { padding: 17px var(--section-inset, 16px) 14px; }
-.platform-shell[data-payout-theme="light"][data-order-page="false"] .workspace-panel :is(td, th) { border-color: var(--section-rule); }
-.platform-shell[data-payout-theme="light"][data-order-page="false"] .workspace-panel thead th { background: #f5f8f9; color: var(--muted); font-weight: 600; }
-.platform-shell[data-payout-theme="light"] .overview-metrics.platform-metrics {
+.console-shell[data-payout-theme="light"] .workspace-panel > .panel-heading { padding: 17px var(--section-inset, 16px) 14px; }
+.console-shell[data-payout-theme="light"][data-order-page="false"] .workspace-panel :is(td, th) { border-color: var(--section-rule); }
+.console-shell[data-payout-theme="light"][data-order-page="false"] .workspace-panel thead th { background: #f5f8f9; color: var(--muted); font-weight: 600; }
+.console-shell[data-payout-theme="light"] .overview-metrics.platform-metrics {
   gap: 10px; padding: 0 var(--section-inset) var(--section-inset); border: 0; background: transparent;
 }
-.platform-shell[data-payout-theme="light"] .platform-metrics > div {
+.console-shell[data-payout-theme="light"] .platform-metrics > div {
   background: var(--surface); border: 1px solid var(--border); border-radius: 12px; gap: 6px;
 }
-.platform-shell[data-payout-theme="light"] .platform-metrics strong,
-.platform-shell[data-payout-theme="light"] .task-summary-card strong { font-weight: 680; color: var(--navy); font-variant-numeric: tabular-nums; }
-.platform-shell[data-payout-theme="light"] :is(.platform-merchant-cards, .platform-channel-groups, .platform-task-groups) { padding-inline: var(--section-inset); }
-.platform-shell[data-payout-theme="light"] .platform-card { border-radius: 12px; padding: 16px; border-color: var(--section-rule); box-shadow: none; }
-.platform-shell[data-payout-theme="light"] .platform-card-meta { border-color: var(--section-rule); }
-.platform-shell[data-payout-theme="light"] .task-summary-card:enabled:hover { background: var(--raised); border-color: var(--control-border); }
-.platform-shell[data-payout-theme="dark"] { --table-heading-bg: var(--raised); }
-.platform-shell[data-payout-theme="dark"] :is(.overview-metrics > div:first-child, tbody tr:hover, .task-summary-card:enabled:hover) { background: var(--raised); }
+.console-shell[data-payout-theme="light"] .platform-metrics strong,
+.console-shell[data-payout-theme="light"] .task-summary-card strong { font-weight: 680; color: var(--navy); font-variant-numeric: tabular-nums; }
+.console-shell[data-payout-theme="light"] :is(.platform-merchant-cards, .platform-channel-groups, .platform-task-groups) { padding-inline: var(--section-inset); }
+.console-shell[data-payout-theme="light"] .platform-card { border-radius: 12px; padding: 16px; border-color: var(--section-rule); box-shadow: none; }
+.console-shell[data-payout-theme="light"] .platform-card-meta { border-color: var(--section-rule); }
+.console-shell[data-payout-theme="light"] .task-summary-card:enabled:hover { background: var(--raised); border-color: var(--control-border); }
+.console-shell[data-payout-theme="dark"] { --table-heading-bg: var(--raised); }
+.console-shell[data-payout-theme="dark"] :is(.overview-metrics > div:first-child, tbody tr:hover, .task-summary-card:enabled:hover) { background: var(--raised); }
 
 @media (max-width: 680px) {
   .member-shell dialog.operator-menu[open] {
@@ -278,11 +278,25 @@
     height: 100dvh; max-height: 100dvh; padding: 0; border: 0; border-inline-end: 1px solid var(--border); border-radius: 0;
   }
   .member-shell .operator-menu .dialog-header { position: static; margin: 0; padding: 10px 14px; }
-  .platform-shell .operator-menu > .nav { display: block; padding: 8px 10px; }
-  .platform-shell .operator-menu .nav button { justify-content: flex-start; width: 100%; min-height: 43px; gap: 10px; }
+  .console-shell .operator-menu > .nav { display: block; padding: 8px 10px; }
+  .console-shell .operator-menu .nav button { justify-content: flex-start; width: 100%; min-height: 43px; gap: 10px; }
   .operator-menu .operator-account { padding-bottom: max(10px, env(safe-area-inset-bottom)); }
   .operator-menu .operator-icon, .operator-menu .payout-filter-trigger { min-height: 44px; }
   .operator-menu .operator-icon { width: 44px; }
   .operator-menu :is(.operator-profile, .operator-preferences) { grid-template-columns: 24px minmax(0,1fr) 44px; }
-  .platform-shell .topbar nav { gap: 6px 12px; }
+  .console-shell .topbar nav { gap: 6px 12px; }
+}
+
+.merchant-shell .workspace > :is(.payout-metrics, .workspace-panel, .security-settings) + :is(.workspace-panel, .security-settings) { margin-top: 16px; }
+.merchant-shell .workspace .payout-metrics { margin-bottom: 16px; }
+.merchant-shell .workspace-panel table :is(.payment-amount, .order-number) { font-variant-numeric: tabular-nums; }
+.merchant-shell .workspace-panel table .payment-amount { font-weight: 650; }
+.merchant-shell .workspace-panel > .table-scroll { border-radius: 0 0 13px 13px; }
+.merchant-shell .workspace-panel > .table-scroll td { padding-block: 14px; }
+.merchant-shell .security-settings { border-radius: 14px; background: var(--surface); }
+.merchant-shell .workspace :is(.workspace-panel, .overview-metrics, .security-settings) { min-width: 0; }
+.merchant-shell .member-payments .payment-reference-filter { display: flex; width: auto; max-width: 100%; align-items: center; }
+.merchant-shell .member-payments .payment-reference-filter input { width: clamp(12rem, 22vw, 18rem); max-width: 100%; }
+@media (max-width: 680px) {
+  .merchant-shell .overview-metrics.platform-metrics { grid-template-columns: repeat(2, minmax(0,1fr)); }
 }

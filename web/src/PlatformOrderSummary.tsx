@@ -3,6 +3,10 @@ import { useLocale } from "./locale";
 
 type SummaryRow = { currency: string; amount_minor: string | number; status: string; checkout_needs_review?: boolean };
 
+export function matchesOrderStatus(row: SummaryRow, status: string, payout = false) {
+  return !status || status === (!payout && row.checkout_needs_review ? "review" : row.status);
+}
+
 export function PlatformOrderSummary({ rows, payout = false, selected, onSelect, isoScale }: {
   rows: SummaryRow[]; payout?: boolean; selected: string; onSelect: (status: string) => void; isoScale: boolean;
 }) {
@@ -16,7 +20,7 @@ export function PlatformOrderSummary({ rows, payout = false, selected, onSelect,
   ];
   return <div className="payout-metrics" role="group" aria-label={t("Status")}>
     {cards.map(({ status, label, icon: Icon, color }) => {
-      const matches = rows.filter(row => !status || status === (!payout && row.checkout_needs_review ? "review" : row.status));
+      const matches = rows.filter(row => matchesOrderStatus(row, status, payout));
       const sums = new Map<string, bigint>();
       for (const row of matches) {
         sums.set(row.currency, (sums.get(row.currency) ?? 0n) + BigInt(row.amount_minor));

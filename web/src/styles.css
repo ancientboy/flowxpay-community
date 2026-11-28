@@ -17,6 +17,7 @@
   --control-border: #cbd8de;
   --muted: #506277;
   --surface: #fff;
+  --table-heading-bg: #f4f7fa;
   --control-radius: 9px;
   --radius: 12px;
   --shadow: 0 1px 2px #0a203b08;
@@ -282,7 +283,7 @@ dialog:has(> .payment-detail) { padding-top: 0; }
 .panel-heading { padding: 16px; flex-wrap: wrap; }
 .workspace-panel th:first-child, .workspace-panel td:first-child { padding-left: 16px; }
 .workspace-panel th:last-child, .workspace-panel td:last-child { padding-right: 16px; }
-.workspace-panel th { background: #f4f7fa; }
+.workspace-panel th { background: var(--table-heading-bg); }
 .workspace-panel tbody tr:last-child td { border-bottom: 0; }
 .workspace-panel .empty, .panel-note { padding-inline: 16px; }
 .panel-note { margin-bottom: 12px; }

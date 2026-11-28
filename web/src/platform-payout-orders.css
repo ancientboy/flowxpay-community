@@ -115,9 +115,9 @@
 .topbar .payout-filter-field { width: 7.5rem; }
 
 [data-payout-theme] {
-  --canvas: #fff; --surface: #fff; --raised: #f4f5f6; --navy: #24262a;
+  --raised: var(--table-heading-bg); --navy: #24262a;
   --action: #5c4b93; --active: #eae5f4; --teal: #7866a7; --muted: #62666c;
-  --border: #e1e3e6; --control-border: #cbd0d5; --badge-ink: #4f4470;
+  --badge-ink: #4f4470;
   background: var(--canvas); color: var(--navy);
 }
 [data-payout-theme="dark"] {
@@ -163,6 +163,7 @@
 .payout-activity [data-status=processing] { background: #9b8ab6; }
 .payout-activity [data-status=failed] { background: #c97d7a; }
 .payout-ledger { min-width: 0; }
+[data-payout-theme="light"] .payout-table { background: var(--surface); }
 .payout-ledger-head { display: flex; gap: 10px; align-items: center; margin: 0 0 10px; }
 .payout-ledger-head span { font-size: .8rem; color: var(--muted); }
 .payout-tabs { display: flex; gap: clamp(8px,2vw,28px); border-bottom: 1px solid var(--border); margin-bottom: 12px; }

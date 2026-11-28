@@ -54,7 +54,7 @@ export function PlatformCollectionOrders({ merchant, initialReference, token, re
     <p className="payout-scope">{l("按币种汇总当前页的代收订单金额。净入账以订单记录为准。", "Amounts are grouped by currency for this page. Net credits are shown per order.")}</p>
     {rows && <PlatformOrderSummary rows={rows} scope={rows.map(row => row.checkout_needs_review ? {...row, status: "review"} : row)}
       label={t("Collection order amount")} statusLabel={statusLabel} isoScale />}
-    <div className="payout-ledger">
+    <div className="payout-ledger collection-ledger">
     <div className="payout-ledger-head"><h2>{title}</h2>{rows && <span>{l("本页", "This page")} · {rows.length}</span>}</div>
     <div className="payout-tabs" role="group" aria-label={t("Status")}>
       {tabs.map(status => <button type="button" key={status} className="payout-tab" aria-pressed={filters.status === status}

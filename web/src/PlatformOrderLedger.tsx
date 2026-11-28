@@ -75,7 +75,7 @@ export function PlatformOrderLedger({ payout, orders, merchants, merchant, onMer
     </div>}
     <PlatformOrderSummary rows={rows} scope={scope.map(order => ({...order, status: displayStatus(order)}))} isoScale={productionOperations} statusLabel={statusLabel}
       label={(filters.status ? statusLabel(filters.status) + " · " : "") + t(payout ? "Payout volume" : "Collection order amount")} />
-    <section className="payout-ledger" aria-labelledby="payout-list-title">
+    <section className={payout ? "payout-ledger" : "payout-ledger collection-ledger"} aria-labelledby="payout-list-title">
       <div className="payout-ledger-head"><h2 id="payout-list-title">{zh ? "订单明细" : "Order details"}</h2>
         <span role="status">{zh ? "共 " + rows.length + " 笔" : rows.length + " orders"}</span></div>
       <div className="payout-tabs" role="group" aria-label={t("Status")}>

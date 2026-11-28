@@ -215,3 +215,26 @@
 .collection-results { margin-top: 14px; }
 [data-payout-theme="dark"] .collection-results th { background: var(--raised); }
 [data-payout-theme="dark"] .collection-results tbody tr:hover { background: var(--raised); }
+
+.collection-ledger {
+  --ledger-inset: clamp(14px, 2vw, 20px);
+  --ledger-rule: color-mix(in srgb, var(--border) 65%, var(--surface));
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: 0 3px 12px rgb(22 52 68 / 3%);
+}
+.collection-ledger .payout-ledger-head {
+  justify-content: space-between;
+  padding: var(--ledger-inset) var(--ledger-inset) 0;
+}
+.collection-ledger .payout-tabs { margin-inline: var(--ledger-inset); border-color: var(--ledger-rule); }
+.collection-ledger .payout-tools { padding: 0 var(--ledger-inset) 18px; }
+.collection-ledger .collection-results { border: 0; box-shadow: none; background: transparent; }
+.collection-ledger :is(.collection-results, .payout-table) { clip-path: inset(0 round 0 0 13px 13px); }
+.collection-ledger table thead th { background: color-mix(in srgb, var(--raised) 70%, var(--surface)); }
+.collection-ledger table :is(th, td), .collection-ledger .payout-table tbody tr { border-color: var(--ledger-rule); }
+.collection-ledger .payout-table tbody tr:hover { background: color-mix(in srgb, var(--raised) 65%, var(--surface)); }
+@media (min-width: 691px) {
+  .collection-ledger .payout-table td { padding-block: 15px; }
+}

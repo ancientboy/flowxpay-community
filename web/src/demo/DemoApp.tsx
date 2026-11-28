@@ -41,7 +41,7 @@ export function App() {
       <span>{zh ? "只读演示 · 示例数据" : "Read-only demo · sample data"}</span>
       {!view && <LanguageSelect />}
     </header>
-    {view === "operator" ? <PlatformConsole logo={brand()} session={{ token, role: "viewer", user: "Demo platform operator" }} signOut={home} />
+    {view === "operator" ? <PlatformConsole initialPage={params.get("page") === "payouts" ? "Payouts" : "Overview"} logo={brand()} session={{ token, role: "viewer", user: "Demo platform operator" }} signOut={home} />
       : view === "merchant" ? <MemberWorkspace logo={brand()} capabilities={capabilities} token={token} member={demoMember} signedOut={home} />
       : <main className="community-demo-home">
         <h1>{title}</h1>

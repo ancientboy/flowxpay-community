@@ -1,0 +1,79 @@
+.payout-book { display: grid; gap: 18px; min-width: 0; color: #173247; }
+.workspace:has(.payout-book) .page-heading { margin-bottom: 6px; }
+.payout-scope { font-size: .92rem; color: #536b78; }
+.payout-metrics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.payout-metric {
+  --accent: #306b7b; --tint: #eaf4f6;
+  display: flex; flex-direction: column; gap: 15px;
+  align-items: stretch; justify-content: flex-start; text-align: start; min-width: 0;
+  padding: 16px; background: white; color: #163444;
+  border: 1px solid #d5e1e5; border-radius: 12px; box-shadow: 0 2px 6px #16344406;
+}
+.payout-metric.success { --accent: #17705e; --tint: #e9f5ee; }
+.payout-metric.pending { --accent: #8b5a17; --tint: #fff4dc; }
+.payout-metric.failed { --accent: #a34151; --tint: #fbeff1; }
+.payout-metric:hover { border-color: var(--accent); }
+.payout-metric[aria-pressed="true"] { background: linear-gradient(130deg, var(--tint), white 78%); border-color: var(--accent); box-shadow: inset 0 2px 0 var(--accent); }
+.payout-metric-top { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-weight: 620; font-size: .94rem; }
+.payout-icon { width: 28px; height: 28px; display: inline-grid; place-items: center; color: var(--accent); border-radius: 8px; background: var(--tint); }
+.payout-count { margin-inline-start: auto; font-size: .8rem; color: #536675; font-weight: 500; }
+.payout-values { display: grid; gap: 2px; font-variant-numeric: tabular-nums; }
+.payout-values strong { font-size: clamp(1.12rem, 1.8vw, 1.67rem); font-weight: 680; line-height: 1.3; overflow-wrap: anywhere; letter-spacing: -.035em; }
+.payout-ledger { min-width: 0; background: white; border: 1px solid #d9e3e7; border-radius: 14px; box-shadow: 0 3px 12px #16344406; }
+.payout-ledger-head { display: flex; align-items: baseline; justify-content: space-between; padding: 20px 20px 12px; }
+.payout-ledger-head h2 { font-size: 1.15rem; }
+.payout-ledger-head > span { color: #526776; font-size: .88rem; }
+.payout-tools { display: grid; align-items: end; grid-template-columns: minmax(135px,1.65fr) minmax(120px,1.3fr) minmax(90px,.8fr) minmax(117px,1fr) minmax(96px,.9fr) auto; gap: 11px; padding: 0 20px 18px; }
+.payout-tools label { display: grid; gap: 5px; min-width: 0; font-size: .85rem; color: #425966; font-weight: 550; }
+.payout-tools :is(select,input) { width: 100%; min-width: 0; min-height: 40px; font-weight: 450; }
+.payout-search-input { position: relative; }
+.payout-search-input > svg { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); pointer-events: none; color: #677c86; }
+.payout-search-input input { padding-left: 34px; }
+.payout-filter-actions { display: flex; align-items: center; gap: 8px; }
+.payout-filter-actions .primary { min-height: 40px; }
+.payout-table { width: 100%; table-layout: fixed; border-collapse: collapse; }
+.payout-table th, .payout-table td { padding: 12px 9px; text-align: left; overflow-wrap: anywhere; white-space: normal; }
+.payout-table th { font-size: .82rem; font-weight: 600; color: #556b77; background: #f6f9fa; }
+.payout-table td { border-top: 1px solid #e8eef0; vertical-align: middle; }
+.payout-table th:first-child, .payout-table td:first-child { padding-left: 20px; }
+.payout-table th:first-child { width: 24%; }
+.payout-table th:nth-child(2) { width: 19%; }
+.payout-table th:nth-child(3) { width: 17%; }
+.payout-table th:nth-child(4) { width: 18%; }
+.payout-table th:last-child { width: 48px; }
+.payout-table tbody tr:last-child td { border-bottom: 0; }
+.payout-table .ref button { text-align: start; font-weight: 650; padding: 0; min-height: 26px; overflow-wrap: anywhere; }
+.payout-table .amount { text-align: end; padding-right: 16px; }
+.payout-table td.amount { font-weight: 680; font-variant-numeric: tabular-nums; }
+.payout-table small { display: block; margin-top: 3px; color: #607582; font-size: .8rem; }
+.payout-table .created { font-variant-numeric: tabular-nums; }
+.payout-table .inspect button { display: grid; place-items: center; width: 32px; height: 32px; border: 1px solid #d5e0e3; border-radius: 8px; background: white; color: var(--action); }
+.payout-table .inspect button:hover { background: var(--active); }
+.payout-empty { padding: 28px 20px; text-align: center; border-top: 1px solid var(--border); color: var(--muted); }
+.payout-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+@media (max-width: 1180px) {
+  .payout-tools { grid-template-columns: repeat(3,minmax(0,1fr)); }
+}
+@media (max-width: 970px) {
+  .payout-metrics { grid-template-columns: repeat(2,minmax(0,1fr)); }
+}
+@media (max-width: 690px) {
+  .payout-metrics { gap: 8px; }
+  .payout-metric { padding: 12px; gap: 9px; }
+  .payout-metric-top { font-size: .87rem; }
+  .payout-icon { width: 23px; height: 23px; }
+  .payout-count { font-size: .77rem; }
+  .payout-tools { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 9px; padding: 0 14px 14px; }
+  .payout-ledger-head { padding: 14px; }
+  .payout-table, .payout-table tbody { display: block; }
+  .payout-table thead { position: absolute; clip-path: inset(50%); width: 1px; height: 1px; overflow: hidden; }
+  .payout-table tbody tr { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); grid-template-areas: "ref amount" "merchant status" "created inspect"; align-items: center; gap: 8px; padding: 14px; border-top: 1px solid var(--border); }
+  .payout-table tbody tr td, .payout-table tbody tr td:first-child { padding: 0; border: 0; }
+  .payout-table .ref { grid-area: ref; }
+  .payout-table .merchant { grid-area: merchant; }
+  .payout-table .status { grid-area: status; justify-self: end; }
+  .payout-table .amount { grid-area: amount; }
+  .payout-table .created { grid-area: created; font-size: .85rem; }
+  .payout-table .created small { display: inline; margin-left: 5px; }
+  .payout-table .inspect { grid-area: inspect; justify-self: end; }
+}

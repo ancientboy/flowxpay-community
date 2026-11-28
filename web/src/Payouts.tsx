@@ -11,7 +11,7 @@ import { merchantQuotesPath, OrderQuote, rateText, type MerchantQuote } from "./
 const types = { bank_account: "Bank account", pix: "Pix", upi: "UPI" };
 type RecipientType = keyof typeof types;
 
-const statuses: Record<string, string> = {
+export const payoutStatuses: Record<string, string> = {
   draft: "Awaiting review", processing: "Processing", pending_confirmation: "Pending confirmation",
   succeeded: "Succeeded", failed: "Failed", rejected: "Rejected", queued: "Queued", pending_approval: "Pending approval",
   routing: "Processing", requires_action: "Requires action", cancelled: "Cancelled", expired: "Expired",
@@ -70,7 +70,7 @@ function PayoutOrders({ state, sandbox, refresh, find, select, actions }: {
         {items.map(item => <tr key={item.id}>
           <td><button className="text-button wrap" onClick={() => select(item.id)}>{item.merchant_reference}</button></td>
           <td className="resource-id order-number">{item.id}</td>
-          <td>{money(item.amount_minor, item.currency)}</td><td>{t(statuses[item.status] ?? item.status)}</td>
+          <td>{money(item.amount_minor, item.currency)}</td><td>{t(payoutStatuses[item.status] ?? item.status)}</td>
         </tr>)}
       </WorkspaceTable> : <p className="muted empty">{t("No payouts found.")}</p>}</LoadState>
   </section>;
@@ -80,7 +80,7 @@ function PayoutFacts({ item, children }: { item: PayoutOrder; children: [string,
   const { t, money } = useLocale();
   return <Details fields={[
     [t("Payout ID"), item.id], [t("Merchant reference"), item.merchant_reference],
-    [t("Status"), t(statuses[item.status] ?? item.status)], [t("Amount"), money(item.amount_minor, item.currency)],
+    [t("Status"), t(payoutStatuses[item.status] ?? item.status)], [t("Amount"), money(item.amount_minor, item.currency)],
     [t("Quoted merchant fee"), <OrderQuote quote={item.quote} currency={item.currency} />],
     ...children,
   ]} />;

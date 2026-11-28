@@ -407,7 +407,98 @@
         "accounts": 3
       }
     ],
-    "payments": [],
+    "payments": [
+      {
+        "id": "pout_demo_86024",
+        "merchant": "M10028",
+        "reference": "DEMO-1128-218",
+        "currency": "BRL",
+        "amount_minor": 186240,
+        "status": "succeeded",
+        "created_at": "2026-11-28T09:48:00+00:00",
+        "updated_at": "2026-11-28T09:50:00+00:00"
+      },
+      {
+        "id": "pout_demo_86023",
+        "merchant": "M20029",
+        "reference": "DEMO-1128-217",
+        "currency": "USD",
+        "amount_minor": 49500,
+        "status": "pending_confirmation",
+        "created_at": "2026-11-28T08:48:00+00:00",
+        "updated_at": "2026-11-28T08:50:00+00:00"
+      },
+      {
+        "id": "pout_demo_86022",
+        "merchant": "M10028",
+        "reference": "DEMO-1128-216",
+        "currency": "BRL",
+        "amount_minor": 86235,
+        "status": "processing",
+        "created_at": "2026-11-28T07:48:00+00:00",
+        "updated_at": "2026-11-28T07:50:00+00:00"
+      },
+      {
+        "id": "pout_demo_86021",
+        "merchant": "M10028",
+        "reference": "DEMO-1128-215",
+        "currency": "USD",
+        "amount_minor": 124980,
+        "status": "succeeded",
+        "created_at": "2026-11-28T06:48:00+00:00",
+        "updated_at": "2026-11-28T06:50:00+00:00"
+      },
+      {
+        "id": "pout_demo_86020",
+        "merchant": "M20029",
+        "reference": "DEMO-1128-214",
+        "currency": "BRL",
+        "amount_minor": 37560,
+        "status": "failed",
+        "created_at": "2026-11-28T05:48:00+00:00",
+        "updated_at": "2026-11-28T05:50:00+00:00"
+      },
+      {
+        "id": "pout_demo_86019",
+        "merchant": "M20029",
+        "reference": "DEMO-1128-213",
+        "currency": "USD",
+        "amount_minor": 76825,
+        "status": "succeeded",
+        "created_at": "2026-11-28T04:48:00+00:00",
+        "updated_at": "2026-11-28T04:50:00+00:00"
+      },
+      {
+        "id": "pout_demo_86018",
+        "merchant": "M10028",
+        "reference": "DEMO-1127-212",
+        "currency": "BRL",
+        "amount_minor": 52340,
+        "status": "pending_confirmation",
+        "created_at": "2026-11-27T09:48:00+00:00",
+        "updated_at": "2026-11-27T09:50:00+00:00"
+      },
+      {
+        "id": "pout_demo_86017",
+        "merchant": "M20029",
+        "reference": "DEMO-1127-211",
+        "currency": "USD",
+        "amount_minor": 9400,
+        "status": "draft",
+        "created_at": "2026-11-27T08:48:00+00:00",
+        "updated_at": "2026-11-27T08:50:00+00:00"
+      },
+      {
+        "id": "pout_demo_86016",
+        "merchant": "M10028",
+        "reference": "DEMO-1127-210",
+        "currency": "BRL",
+        "amount_minor": 212500,
+        "status": "succeeded",
+        "created_at": "2026-11-27T07:48:00+00:00",
+        "updated_at": "2026-11-27T07:50:00+00:00"
+      }
+    ],
     "volumes": [
       {
         "currency": "BRL",
@@ -792,7 +883,58 @@
         "accounts": 3
       }
     ],
-    "payments": [],
+    "payments": [
+      {
+        "id": "pout_demo_86024",
+        "merchant": "M10028",
+        "reference": "DEMO-1128-218",
+        "currency": "BRL",
+        "amount_minor": 186240,
+        "status": "succeeded",
+        "created_at": "2026-11-28T09:48:00+00:00",
+        "updated_at": "2026-11-28T09:50:00+00:00"
+      },
+      {
+        "id": "pout_demo_86022",
+        "merchant": "M10028",
+        "reference": "DEMO-1128-216",
+        "currency": "BRL",
+        "amount_minor": 86235,
+        "status": "processing",
+        "created_at": "2026-11-28T07:48:00+00:00",
+        "updated_at": "2026-11-28T07:50:00+00:00"
+      },
+      {
+        "id": "pout_demo_86021",
+        "merchant": "M10028",
+        "reference": "DEMO-1128-215",
+        "currency": "USD",
+        "amount_minor": 124980,
+        "status": "succeeded",
+        "created_at": "2026-11-28T06:48:00+00:00",
+        "updated_at": "2026-11-28T06:50:00+00:00"
+      },
+      {
+        "id": "pout_demo_86018",
+        "merchant": "M10028",
+        "reference": "DEMO-1127-212",
+        "currency": "BRL",
+        "amount_minor": 52340,
+        "status": "pending_confirmation",
+        "created_at": "2026-11-27T09:48:00+00:00",
+        "updated_at": "2026-11-27T09:50:00+00:00"
+      },
+      {
+        "id": "pout_demo_86016",
+        "merchant": "M10028",
+        "reference": "DEMO-1127-210",
+        "currency": "BRL",
+        "amount_minor": 212500,
+        "status": "succeeded",
+        "created_at": "2026-11-27T07:48:00+00:00",
+        "updated_at": "2026-11-27T07:50:00+00:00"
+      }
+    ],
     "volumes": [
       {
         "currency": "BRL",
@@ -1233,7 +1375,48 @@
         "accounts": 3
       }
     ],
-    "payments": [],
+    "payments": [
+      {
+        "id": "pout_demo_86023",
+        "merchant": "M20029",
+        "reference": "DEMO-1128-217",
+        "currency": "USD",
+        "amount_minor": 49500,
+        "status": "pending_confirmation",
+        "created_at": "2026-11-28T08:48:00+00:00",
+        "updated_at": "2026-11-28T08:50:00+00:00"
+      },
+      {
+        "id": "pout_demo_86020",
+        "merchant": "M20029",
+        "reference": "DEMO-1128-214",
+        "currency": "BRL",
+        "amount_minor": 37560,
+        "status": "failed",
+        "created_at": "2026-11-28T05:48:00+00:00",
+        "updated_at": "2026-11-28T05:50:00+00:00"
+      },
+      {
+        "id": "pout_demo_86019",
+        "merchant": "M20029",
+        "reference": "DEMO-1128-213",
+        "currency": "USD",
+        "amount_minor": 76825,
+        "status": "succeeded",
+        "created_at": "2026-11-28T04:48:00+00:00",
+        "updated_at": "2026-11-28T04:50:00+00:00"
+      },
+      {
+        "id": "pout_demo_86017",
+        "merchant": "M20029",
+        "reference": "DEMO-1127-211",
+        "currency": "USD",
+        "amount_minor": 9400,
+        "status": "draft",
+        "created_at": "2026-11-27T08:48:00+00:00",
+        "updated_at": "2026-11-27T08:50:00+00:00"
+      }
+    ],
     "volumes": []
   },
   "/sandbox/ops/operations?merchant=M20029": {

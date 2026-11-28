@@ -774,6 +774,7 @@ export const messages: Record<string, string> = {
   "Payout details": "代付详情",
   "payout details": "代付详情",
   "Payout ID": "代付 ID",
+  "All payouts": "全部代付",
   "Payout orders": "代付订单",
   "payout orders": "代付订单",
   "Payouts": "代付",

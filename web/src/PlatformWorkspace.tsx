@@ -1,3 +1,4 @@
+import { PlatformPayoutOrders, initialPayoutFilters } from "./PlatformPayoutOrders";
 import { PlatformCollectionOrders } from "./PlatformCollectionOrders";
 import { OrderEvidence } from "./OrderEvidence";
 import { useEffect, useLayoutEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
@@ -32,7 +33,7 @@ const operationsNav: {zh:string;en:string;pages:Page[]}[] = [
 type OrderTarget = { direction: "collection" | "payout"; reference?: string; currency?: string; pending?: boolean };
 type Page = typeof navigation[number][0];
 export interface PlatformSession { token: string; user: string; role: "viewer" | "operator"; platformOwner?: boolean }
-type PlatformOrder = { id: string; merchant: string; reference: string; currency: string; amount_minor: number | string;
+export type PlatformOrder = { id: string; merchant: string; reference: string; currency: string; amount_minor: number | string;
   status: string; created_at: string; checkout_needs_review?: boolean;
   market?: string; method?: string; channel_id?: string; account_id?: string; updated_at?: string;
   upstream_activity?: { attempted_at?: string; submitted_at?: string; lookup_at?: string; lookup_result?: string;
@@ -113,14 +114,14 @@ export function PlatformWorkspace({ logo }: { logo: ReactNode }) {
   </main>;
 }
 
-export function PlatformConsole({ logo, session, signOut }: {
-  logo: ReactNode; session: PlatformSession; signOut: (notice?: string) => void;
+export function PlatformConsole({ logo, session, signOut, initialPage = "Overview" }: {
+  logo: ReactNode; session: PlatformSession; signOut: (notice?: string) => void; initialPage?: Page;
 }) {
   const { t, locale } = useLocale();
   const [orderTarget, setOrderTarget] = useState<OrderTarget>();
   const [focusDifferences, setFocusDifferences] = useState(false);
   const [focusBindings, setFocusBindings] = useState(false);
-  const [page, setPage] = useState<Page>("Overview");
+  const [page, setPage] = useState<Page>(initialPage);
   const [merchant, setMerchant] = useState("");
   const [target, setTarget] = useState<SiteTarget>();
   const [signingOut, setSigningOut] = useState(false);
@@ -188,7 +189,7 @@ export function PlatformConsole({ logo, session, signOut }: {
     </nav>
     <main className="workspace">
       {logoutError && <p className="error" role="alert">{t("The platform session could not be closed.")}</p>}
-      <div className="heading page-heading"><h1 ref={heading} tabIndex={-1}>{t(productionOperations && page === "Channel accounts" ? "Merchant channel assignments" : page)}</h1></div>
+      <div className="heading page-heading"><h1 ref={heading} tabIndex={-1}>{t(page === "Payouts" ? "Payout orders" : productionOperations && page === "Channel accounts" ? "Merchant channel assignments" : page)}</h1></div>
       {page === "Platform team" && session.platformOwner
         ? <PlatformTeam token={session.token} />
         : page === "Merchants"
@@ -198,7 +199,7 @@ export function PlatformConsole({ logo, session, signOut }: {
             <PlatformOperations session={session} merchant="" catalogOnly />
             <ChannelMarketPreviews />
           </>
-          : <PlatformReports key={page + ":" + merchant} session={session} page={page} merchant={merchant}
+          : <PlatformReports key={page === "Payouts" ? page : page + ":" + merchant} session={session} page={page} merchant={merchant}
           selectMerchant={(id, differences = false) => { setTarget(undefined); setFocusDifferences(differences); setMerchant(id); }} configure={configure}
           orderTarget={orderTarget} openOrders={next => {
             setOrderTarget(next);
@@ -217,6 +218,7 @@ function PlatformReports({ session, merchant, page, selectMerchant, configure, t
   const [creating, setCreating] = useState(false);
   const [order, setOrder] = useState<PlatformOrder>();
   const [evidenceOrder, setEvidenceOrder] = useState("");
+  const [payoutFilters, setPayoutFilters] = useState(initialPayoutFilters);
   const [collectionRevision, setCollectionRevision] = useState(0);
   const [paymentSearch, setPaymentSearch] = useState(orderTarget?.reference ?? "");
   const [paymentReference, setPaymentReference] = useState(orderTarget?.reference ?? "");
@@ -241,7 +243,7 @@ function PlatformReports({ session, merchant, page, selectMerchant, configure, t
     ? exactMoney(item.amount_minor, item.currency, productionOperations) : money(item.amount_minor, item.currency);
 
   return <><LoadState state={state} label={t("Platform operations")}>{data => <div className="merchant-overview">
-    <section className="workspace-panel">
+    {page !== "Payouts" && <section className="workspace-panel">
       <div className="heading panel-heading">
         <label className="overview-filters">{t("Merchant")} <select id="ops-merchant-scope" value={merchant} onChange={event => selectMerchant(event.target.value)}>
           <option value="">{t("All merchants")}</option>
@@ -256,7 +258,7 @@ function PlatformReports({ session, merchant, page, selectMerchant, configure, t
           </button>}
         </div>
       </div>
-    </section>
+    </section>}
     {page === "Overview" && productionOperations && <OrderRiskOverview token={session.token}
       openPending={currency => openOrders({direction:"payout", currency, pending:true})}
       openConflict={(direction, reference) => openOrders({direction, reference})}
@@ -316,11 +318,13 @@ function PlatformReports({ session, merchant, page, selectMerchant, configure, t
     {page === "Payments" && productionOperations && <PlatformCollectionOrders
       key={merchant + "/" + (orderTarget?.reference ?? "")} merchant={merchant} initialReference={orderTarget?.reference}
       token={session.token} revision={collectionRevision} openOrder={setOrder} openEvidence={setEvidenceOrder} />}
-    {((page === "Payments" && !productionOperations) || page === "Payouts") && <section className="workspace-panel">
-      {riskFilter && <div className="heading header-actions panel-note">
-        <span>{t("Pending confirmation")} · {riskFilter}</span>
-        <button className="secondary" onClick={() => setRiskFilter(undefined)}>{t("Clear")}</button>
-      </div>}
+    {page === "Payouts" && <PlatformPayoutOrders orders={data.payments} merchants={data.merchants}
+      merchant={merchant} onMerchant={id => { state.reload(); selectMerchant(id); }}
+      search={paymentSearch} onSearchChange={setPaymentSearch} reference={paymentReference}
+      applySearch={next => { if (next !== paymentReference) { state.reload(); setPaymentReference(next); } }}
+      riskFilter={riskFilter} clearRisk={() => { state.reload(); setRiskFilter(undefined); }}
+      filters={payoutFilters} setFilters={setPayoutFilters} openOrder={setOrder} />}
+    {page === "Payments" && !productionOperations && <section className="workspace-panel">
       <div className="heading panel-heading"><h2>{t("Recent transactions")}</h2>
         <form className="overview-filters payment-reference-filter" onSubmit={event => {
           event.preventDefault();
@@ -330,7 +334,7 @@ function PlatformReports({ session, merchant, page, selectMerchant, configure, t
             setPaymentReference(next);
           }
         }}>
-          <input id="ops-payment-reference" aria-label={t(page === "Payouts" ? "Find payouts" : "Search payments")} placeholder={t("Order reference or ID")}
+          <input id="ops-payment-reference" aria-label={t("Search payments")} placeholder={t("Order reference or ID")}
             value={paymentSearch} onChange={event => setPaymentSearch(event.target.value)} maxLength={80}
             pattern="[a-zA-Z0-9._:\-]{1,80}" />
           <button className="secondary">{t("Search")}</button>
@@ -341,13 +345,13 @@ function PlatformReports({ session, merchant, page, selectMerchant, configure, t
           }}>{t("Clear")}</button>}
         </form>
       </div>
-      {data.payments.length ? <WorkspaceTable label={t(page === "Payouts" ? "Platform payout orders" : "Payment list")} columns={[t("Merchant ID"), t("Platform reference"), t("Merchant reference"), t("Amount"), t("Status"), t("Created")]}>
+      {data.payments.length ? <WorkspaceTable label={t("Payment list")} columns={[t("Merchant ID"), t("Platform reference"), t("Merchant reference"), t("Amount"), t("Status"), t("Created")]}>
         {data.payments.map(item => <tr key={item.id}>
           <td>{item.merchant}</td><td className="resource-id order-number"><button className="text-button wrap" onClick={() => setOrder(item)}>{item.id}</button></td>
           <td>{item.reference}</td><td>{orderAmount(item)}</td>
-          <td><PaymentStatusBadge payment={item} payout={page === "Payouts"} /></td><td>{dateTime(item.created_at)}</td>
+          <td><PaymentStatusBadge payment={item} /></td><td>{dateTime(item.created_at)}</td>
         </tr>)}
-      </WorkspaceTable> : <p className="muted empty">{t(page === "Payouts" ? "No payouts match your search." : "No payments match your search.")}</p>}
+      </WorkspaceTable> : <p className="muted empty">{t("No payments match your search.")}</p>}
     </section>}
     {page === "Platform finance" && <PlatformFinance session={session} merchant={merchant} focusBindings={focusBindings} focusDifferences={focusDifferences} selectMerchant={selectMerchant} openOrder={setEvidenceOrder} />}
     {page === "Operations" && <PlatformOperations key={merchant} session={session} merchant={merchant} merchantName={data.merchants.find(item => item.id === merchant)?.name}

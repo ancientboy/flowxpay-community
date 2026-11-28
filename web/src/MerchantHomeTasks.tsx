@@ -1,9 +1,10 @@
+import type { ReactNode } from "react";
 import { useLocale } from "./locale";
 import { base } from "./WorkspaceAccess";
 import { LoadState, useWorkspaceData } from "./WorkspaceInventoryUI";
 
-export function MerchantHomeTasks({ token, canApprove, openPayouts, openSettlement, openIntegration, openReports }: {
-  token: string; canApprove: boolean; openPayouts: () => void; openSettlement: () => void;
+export function MerchantHomeTasks({ token, canApprove, openPayouts, openSettlement, openIntegration, openReports, children }: {
+  children: ReactNode; token: string; canApprove: boolean; openPayouts: () => void; openSettlement: () => void;
   openIntegration: () => void; openReports: () => void;
 }) {
   const { locale } = useLocale();
@@ -11,7 +12,8 @@ export function MerchantHomeTasks({ token, canApprove, openPayouts, openSettleme
   const title = l("待处理事项", "Tasks needing attention");
   const state = useWorkspaceData<{ pending_payouts: number; quotes_to_review: number; refund_reviews: number }>(base + "/tasks", token);
 
-  return <section className="workspace-panel merchant-home-tasks">
+  const hasTasks = state.data && (state.data.pending_payouts > 0 || state.data.quotes_to_review > 0 || state.data.refund_reviews > 0);
+  const panel = <section className="workspace-panel merchant-home-tasks">
     <h2>{title}</h2>
     <LoadState state={state} label={title}>{data => {
       const tasks = [
@@ -28,4 +30,5 @@ export function MerchantHomeTasks({ token, canApprove, openPayouts, openSettleme
       <button type="button" className="secondary" onClick={openReports}>{l("查看经营报表", "View business reports")}</button>
     </div>
   </section>;
+  return <>{hasTasks && panel}{children}{!hasTasks && panel}</>;
 }

@@ -1,3 +1,4 @@
+import { HandlingNote, OrderTime, useOrderClock } from "./OrderContext";
 import { PlatformOrderSummary } from "./PlatformOrderSummary";
 import { PayoutFilterSelect } from "./PayoutFilterSelect";
 import { Eye, MagnifyingGlass } from "@phosphor-icons/react";
@@ -28,13 +29,15 @@ type Props = {
 };
 
 function utcDay(timestamp: string) {
-  return new Date(timestamp).toISOString().slice(0, 10);
+  const value = Date.parse(timestamp);
+  return Number.isFinite(value) ? new Date(value).toISOString().slice(0, 10) : "";
 }
 
 export function PlatformOrderLedger({ payout, orders, merchants, merchant, onMerchant, search, onSearchChange,
   reference, applySearch, riskFilter, clearRisk, filters, setFilters, openOrder }: Props) {
   const { t, locale, exactMoney } = useLocale();
   const zh = locale === "zh-CN";
+  const now = useOrderClock();
   const displayStatus = (order: PlatformOrder) => !payout && order.checkout_needs_review ? "review" : order.status;
   const scope = orders.filter(order =>
     (!filters.currency || filters.currency === order.currency) && (!filters.date || filters.date === utcDay(order.created_at)));
@@ -88,14 +91,13 @@ export function PlatformOrderLedger({ payout, orders, merchants, merchant, onMer
         <th scope="col" className="amount">{t("Amount")}</th><th scope="col">{t("Status")}</th>
         <th scope="col">{zh ? "创建时间 · UTC" : "Created · UTC"}</th><th scope="col"><span className="payout-sr">{t(payout ? "Payout details" : "Payment details")}</span></th>
       </tr></thead><tbody>{rows.map(order => {
-        const timestamp = new Date(order.created_at).toISOString();
         return <tr key={order.id}>
           <td className="ref"><button className="text-button" type="button" onClick={() => openOrder(order)}>{order.reference || order.id}</button>
             {order.reference && <small>{order.id}</small>}</td>
           <td className="merchant">{merchantNames.get(order.merchant) ?? order.merchant}<small>{order.merchant}</small></td>
           <td className="amount">{exactMoney(String(order.amount_minor), order.currency, productionOperations)}</td>
-          <td className="status"><PaymentStatusBadge payout={payout} payment={order} /></td>
-          <td className="created"><time dateTime={order.created_at}>{timestamp.slice(0, 10)}<small>{timestamp.slice(11, 19)} UTC</small></time></td>
+          <td className="status"><PaymentStatusBadge payout={payout} payment={order} /><HandlingNote record={{attempted_at: order.dispatched_at, ...order.upstream_activity, manual_review: order.manual_review, checkout_needs_review: order.checkout_needs_review}} /></td>
+          <td className="created"><OrderTime at={order.created_at} now={now} /></td>
           <td className="inspect"><button type="button" aria-label={t(payout ? "Payout details" : "Payment details") + " · " + order.id} onClick={() => openOrder(order)}>
             <Eye size={17} /></button></td>
         </tr>;

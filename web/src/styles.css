@@ -780,7 +780,7 @@ dialog:has(> .payment-detail) { padding-top: 0; }
 }
 .sidebar-toggle:hover { background: var(--sidebar-selected, #eff0f2); color: var(--navy); }
 .console-shell { --sidebar-selected: #eff0f2; }
-.console-shell[data-payout-theme="dark"] { --sidebar-selected: #343438; }
+.console-shell[data-payout-theme="dark"] { --sidebar-selected: #494744; }
 .console-shell .nav button[aria-current="page"] {
   background: var(--sidebar-selected); color: var(--navy); font-weight: 660; box-shadow: none;
 }

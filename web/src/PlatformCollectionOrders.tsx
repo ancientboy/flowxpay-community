@@ -1,3 +1,4 @@
+import { HandlingNote, OrderTime, useOrderClock } from "./OrderContext";
 import { useEffect, useState } from "react";
 import { PlatformOrderSummary } from "./PlatformOrderSummary";
 import { PaymentStatusBadge } from "./CollectionEvents";
@@ -22,6 +23,7 @@ export function PlatformCollectionOrders({ merchant, initialReference, token, re
 }) {
   const { locale, t, exactMoney, dateTime } = useLocale();
   const l = (zh: string, en: string) => locale === "zh-CN" ? zh : en;
+  const now = useOrderClock();
   const empty = { reference: "", channel: "", currency: "", status: "", notice: "", from: "", to: "", live_test: "" };
   const [draft, setDraft] = useState({ ...empty, reference: initialReference ?? "" });
   const [filters, setFilters] = useState(draft);
@@ -110,12 +112,12 @@ export function PlatformCollectionOrders({ merchant, initialReference, token, re
           </th>
           <td data-label={columns[1]}>{row.channel_name || row.channel_id}</td>
           <td data-label={columns[2]}>{exactMoney(row.amount_minor, row.currency, true)}</td>
-          <td data-label={columns[3]}><PaymentStatusBadge payment={row} /></td>
+          <td data-label={columns[3]}><PaymentStatusBadge payment={row} /><HandlingNote record={row} /></td>
           <td data-label={columns[4]}>{row.credited_minor === null ? "—" : exactMoney(row.credited_minor, row.currency, true)}
             {row.credited_at && <div className="muted small">{dateTime(row.credited_at)}</div>}</td>
           <td data-label={columns[5]}>{row.has_confirmed_allocation ? l("有已确认分摊", "Confirmed allocation") : "—"}
             <div>{noticeLabels[row.notice_state] ?? row.notice_state}</div></td>
-          <td data-label={columns[6]}>{dateTime(row.created_at)}</td>
+          <td data-label={columns[6]}><OrderTime at={row.created_at} now={now} /></td>
           <td data-label={columns[7]}><button className="text-button" type="button" onClick={() => openEvidence(row.id)}>{l("查证", "View evidence")}</button></td>
         </tr>)}
       </WorkspaceTable> : <p className="muted empty">{t("No payments match your search.")}</p>}

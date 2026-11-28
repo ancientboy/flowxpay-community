@@ -85,7 +85,7 @@ export function ProductionFunds({ token, merchant, operator = false, summaryOnly
             return <article className="platform-card" key={account.currency+"/"+account.id}>
               <header className="heading">
                 <h3>{account.currency} <span className="muted small">{account.id}</span></h3>
-                <button type="button" className="text-button" onClick={openActivity}>{t("History")}</button>
+                <button type="button" className="text-button" onClick={openActivity}>{zh ? "资金流水" : "Account activity"}</button>
               </header>
               <dl>
                 <div><dt>{zh ? "可用于代付" : "Available for payouts"}</dt><dd><button type="button" className="text-button" onClick={openActivity}>{amount(account.available_minor)}</button></dd></div>

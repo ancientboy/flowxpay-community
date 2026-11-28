@@ -416,7 +416,9 @@
         "amount_minor": 186240,
         "status": "succeeded",
         "created_at": "2026-11-28T09:48:00+00:00",
-        "updated_at": "2026-11-28T09:50:00+00:00"
+        "updated_at": "2026-11-28T09:50:00+00:00",
+        "manual_review": true,
+        "dispatched_at": "2026-11-28T09:48:05+00:00"
       },
       {
         "id": "pout_demo_86023",
@@ -436,7 +438,9 @@
         "amount_minor": 86235,
         "status": "processing",
         "created_at": "2026-11-28T07:48:00+00:00",
-        "updated_at": "2026-11-28T07:50:00+00:00"
+        "updated_at": "2026-11-28T07:50:00+00:00",
+        "manual_review": true,
+        "dispatched_at": "2026-11-28T07:48:05+00:00"
       },
       {
         "id": "pout_demo_86021",
@@ -446,7 +450,9 @@
         "amount_minor": 124980,
         "status": "succeeded",
         "created_at": "2026-11-28T06:48:00+00:00",
-        "updated_at": "2026-11-28T06:50:00+00:00"
+        "updated_at": "2026-11-28T06:50:00+00:00",
+        "manual_review": true,
+        "dispatched_at": "2026-11-28T06:48:05+00:00"
       },
       {
         "id": "pout_demo_86020",
@@ -476,7 +482,9 @@
         "amount_minor": 52340,
         "status": "pending_confirmation",
         "created_at": "2026-11-27T09:48:00+00:00",
-        "updated_at": "2026-11-27T09:50:00+00:00"
+        "updated_at": "2026-11-27T09:50:00+00:00",
+        "manual_review": true,
+        "dispatched_at": "2026-11-27T09:48:05+00:00"
       },
       {
         "id": "pout_demo_86017",
@@ -496,7 +504,9 @@
         "amount_minor": 212500,
         "status": "succeeded",
         "created_at": "2026-11-27T07:48:00+00:00",
-        "updated_at": "2026-11-27T07:50:00+00:00"
+        "updated_at": "2026-11-27T07:50:00+00:00",
+        "manual_review": true,
+        "dispatched_at": "2026-11-27T07:48:05+00:00"
       }
     ],
     "volumes": [
@@ -892,7 +902,9 @@
         "amount_minor": 186240,
         "status": "succeeded",
         "created_at": "2026-11-28T09:48:00+00:00",
-        "updated_at": "2026-11-28T09:50:00+00:00"
+        "updated_at": "2026-11-28T09:50:00+00:00",
+        "manual_review": true,
+        "dispatched_at": "2026-11-28T09:48:05+00:00"
       },
       {
         "id": "pout_demo_86022",
@@ -902,7 +914,9 @@
         "amount_minor": 86235,
         "status": "processing",
         "created_at": "2026-11-28T07:48:00+00:00",
-        "updated_at": "2026-11-28T07:50:00+00:00"
+        "updated_at": "2026-11-28T07:50:00+00:00",
+        "manual_review": true,
+        "dispatched_at": "2026-11-28T07:48:05+00:00"
       },
       {
         "id": "pout_demo_86021",
@@ -912,7 +926,9 @@
         "amount_minor": 124980,
         "status": "succeeded",
         "created_at": "2026-11-28T06:48:00+00:00",
-        "updated_at": "2026-11-28T06:50:00+00:00"
+        "updated_at": "2026-11-28T06:50:00+00:00",
+        "manual_review": true,
+        "dispatched_at": "2026-11-28T06:48:05+00:00"
       },
       {
         "id": "pout_demo_86018",
@@ -922,7 +938,9 @@
         "amount_minor": 52340,
         "status": "pending_confirmation",
         "created_at": "2026-11-27T09:48:00+00:00",
-        "updated_at": "2026-11-27T09:50:00+00:00"
+        "updated_at": "2026-11-27T09:50:00+00:00",
+        "manual_review": true,
+        "dispatched_at": "2026-11-27T09:48:05+00:00"
       },
       {
         "id": "pout_demo_86016",
@@ -932,7 +950,9 @@
         "amount_minor": 212500,
         "status": "succeeded",
         "created_at": "2026-11-27T07:48:00+00:00",
-        "updated_at": "2026-11-27T07:50:00+00:00"
+        "updated_at": "2026-11-27T07:50:00+00:00",
+        "manual_review": true,
+        "dispatched_at": "2026-11-27T07:48:05+00:00"
       }
     ],
     "volumes": [
@@ -2113,5 +2133,76 @@
     }
   ],
   "/v1/payout-recipients": [],
-  "/v1/payouts": []
+  "/v1/payouts": [
+    {
+      "id": "pout_demo_86024",
+      "merchant_reference": "DEMO-1128-218",
+      "currency": "BRL",
+      "amount_minor": 186240,
+      "status": "succeeded",
+      "created_by": "demo-requester",
+      "reviewed_by": "demo-reviewer",
+      "reviewed_at": "2026-11-28T09:48:05+00:00",
+      "created_at": "2026-11-28T09:48:00+00:00",
+      "account_id": "default_M10028_mock_pix",
+      "recipient_type": "pix",
+      "recipient_id": "demo-payee-brl"
+    },
+    {
+      "id": "pout_demo_86022",
+      "merchant_reference": "DEMO-1128-216",
+      "currency": "BRL",
+      "amount_minor": 86235,
+      "status": "processing",
+      "created_by": "demo-requester",
+      "reviewed_by": "demo-reviewer",
+      "reviewed_at": "2026-11-28T07:48:05+00:00",
+      "created_at": "2026-11-28T07:48:00+00:00",
+      "account_id": "default_M10028_mock_pix",
+      "recipient_type": "pix",
+      "recipient_id": "demo-payee-brl"
+    },
+    {
+      "id": "pout_demo_86021",
+      "merchant_reference": "DEMO-1128-215",
+      "currency": "USD",
+      "amount_minor": 124980,
+      "status": "succeeded",
+      "created_by": "demo-requester",
+      "reviewed_by": "demo-reviewer",
+      "reviewed_at": "2026-11-28T06:48:05+00:00",
+      "created_at": "2026-11-28T06:48:00+00:00",
+      "account_id": "default_M10028_mock_card",
+      "recipient_type": "bank_account",
+      "recipient_id": "demo-payee-usd"
+    },
+    {
+      "id": "pout_demo_86018",
+      "merchant_reference": "DEMO-1127-212",
+      "currency": "BRL",
+      "amount_minor": 52340,
+      "status": "pending_confirmation",
+      "created_by": "demo-requester",
+      "reviewed_by": "demo-reviewer",
+      "reviewed_at": "2026-11-27T09:48:05+00:00",
+      "created_at": "2026-11-27T09:48:00+00:00",
+      "account_id": "default_M10028_mock_pix",
+      "recipient_type": "pix",
+      "recipient_id": "demo-payee-brl"
+    },
+    {
+      "id": "pout_demo_86016",
+      "merchant_reference": "DEMO-1127-210",
+      "currency": "BRL",
+      "amount_minor": 212500,
+      "status": "succeeded",
+      "created_by": "demo-requester",
+      "reviewed_by": "demo-reviewer",
+      "reviewed_at": "2026-11-27T07:48:05+00:00",
+      "created_at": "2026-11-27T07:48:00+00:00",
+      "account_id": "default_M10028_mock_pix",
+      "recipient_type": "pix",
+      "recipient_id": "demo-payee-brl"
+    }
+  ]
 }

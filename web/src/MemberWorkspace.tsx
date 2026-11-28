@@ -149,12 +149,13 @@ export function MemberWorkspace({ logo, token, member, signedOut, endSession, de
       <div className="page-heading heading"><h1 ref={mainHeading} tabIndex={-1}>{labelFor(page)}</h1></div>
       {logoutError && <p className="error" role="alert">{t(logoutError)}</p>}
       {page === "Overview" && production && <>
-        <ProductionFunds token={token} summaryOnly openSource={(direction, id) => go(direction === "collection" ? "Payments" : "Payouts", id)} />
         <MerchantHomeTasks token={token} canApprove={canCreate} openPayouts={() => go("Payouts", "", true)}
-          openSettlement={() => go("Settlement")} openIntegration={() => go("Start integration")} openReports={() => go("Business reports")} />
+          openSettlement={() => go("Settlement")} openIntegration={() => go("Start integration")} openReports={() => go("Business reports")}>
+          <ProductionFunds token={token} summaryOnly openSource={(direction, id) => go(direction === "collection" ? "Payments" : "Payouts", id)} />
+        </MerchantHomeTasks>
       </>}
       {page === "Start integration" && production && <MerchantIntegration token={token} admin={member.role === "admin"} demos={showDemos} go={go} />}
-      {((page === "Overview" && !production) || page === "Business reports") && <WorkspaceOverview capabilities={capabilities} token={token} openChannels={() => setPage("Channel accounts")} openPayments={() => setPage("Payments")} openSite={setSelectedSite} openSettlement={account => { setStatementAccount(account ?? ""); setPage("Settlement"); }} />}
+      {((page === "Overview" && !production) || page === "Business reports") && <WorkspaceOverview openPendingPayouts={page === "Overview" ? () => go("Payouts", "", true) : undefined} capabilities={capabilities} token={token} openChannels={() => setPage("Channel accounts")} openPayments={() => setPage("Payments")} openSite={setSelectedSite} openSettlement={account => { setStatementAccount(account ?? ""); setPage("Settlement"); }} />}
       {page === "Payments" && <WorkspacePayments key={orderRef} token={token} initialOrder={orderRef} />}
       {page === "Payment demos" && showDemos && <PaymentDemos />}
       {page === "Team & security" && <div className="content-grid member-team">

@@ -1,3 +1,4 @@
+import { elapsedTime } from "./OrderContext";
 import { ConsoleShell } from "./ConsoleShell";
 import { PlatformOrderLedger, initialOrderFilters } from "./PlatformOrderLedger";
 import { PlatformCollectionOrders } from "./PlatformCollectionOrders";
@@ -35,7 +36,7 @@ type OrderTarget = { direction: "collection" | "payout"; reference?: string; cur
 type Page = typeof navigation[number][0];
 export interface PlatformSession { token: string; user: string; role: "viewer" | "operator"; platformOwner?: boolean }
 export type PlatformOrder = { id: string; merchant: string; reference: string; currency: string; amount_minor: number | string;
-  status: string; created_at: string; checkout_needs_review?: boolean;
+  status: string; created_at: string; manual_review?: boolean; dispatched_at?: string; checkout_needs_review?: boolean;
   market?: string; method?: string; channel_id?: string; account_id?: string; updated_at?: string;
   upstream_activity?: { attempted_at?: string; submitted_at?: string; lookup_at?: string; lookup_result?: string;
     lookup_attempts: number; next_lookup_at?: string; final_at?: string; conflict_at?: string; callback_state?: string };
@@ -372,6 +373,7 @@ function PayoutActivity({ order }: { order: PlatformOrder }) {
   const { locale, dateTime } = useLocale();
   const zh = locale === "zh-CN";
   const upstream = order.upstream_activity;
+  const duration = elapsedTime(order.created_at, upstream?.final_at, locale);
   const events = [
     { label: zh ? "平台创建订单" : "Order created", at: order.created_at },
     { label: zh ? "开始向上游派单" : "Dispatch attempted", at: upstream?.attempted_at },
@@ -382,6 +384,7 @@ function PayoutActivity({ order }: { order: PlatformOrder }) {
   ].filter(event => event.at).sort((a,b)=>Date.parse(a.at!) - Date.parse(b.at!));
   return <section className="payout-activity">
     <h3>{zh ? "订单进度" : "Order activity"}</h3>
+    {duration && <p>{zh ? "创建至最终确认" : "Creation to final confirmation"} · {duration}</p>}
     <ol>{events.map(event => <li key={event.label}>
       <strong>{event.label}</strong>
       <span>{dateTime(event.at!)}{event.value && <> · {event.value}</>}</span>

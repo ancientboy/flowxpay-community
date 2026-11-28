@@ -46,6 +46,12 @@ export function readDemo<T>(path: string, init: RequestInit): T {
       merchant => merchant.name.toLowerCase().includes(q) || merchant.id.toLowerCase().includes(q),
     ) } as T;
   }
+  if (endpoint === "/v1/payouts") return filterOrders(fixtures["/v1/payouts"], reference) as T;
+  if (endpoint.startsWith("/v1/payouts/")) {
+    const order = fixtures["/v1/payouts"].find(row => endpoint === "/v1/payouts/" + row.id);
+    if (order) return order as T;
+    throw new ApiError(404, "Payout not found.");
+  }
   if (endpoint === workspace + "/payments") {
     return filterOrders(fixtures["/sandbox/workspace/payments"], reference) as T;
   }

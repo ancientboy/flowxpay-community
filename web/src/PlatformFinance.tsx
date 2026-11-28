@@ -61,7 +61,7 @@ export function PlatformFinance({ session, merchant, focusBindings, focusDiffere
   }
 
   return <div className="merchant-overview">
-    {productionOperations && <PeriodReport endpoint={platformAPI + "/period-report"} token={session.token} merchant={merchant} />}
+    {!productionOperations && <SettlementRequests sandbox merchant={merchant} operator={operator} token={session.token} refresh={()=>{}}/>}
     {productionOperations && <LoadState state={state} label={zh ? "财务待办" : "Finance work queue"}>{report =>
       <section className="workspace-panel">
         <div className="heading panel-heading"><h2 ref={reconciliationHeading} tabIndex={-1}>{zh ? "财务待办" : "Finance work queue"}</h2></div>
@@ -83,6 +83,7 @@ export function PlatformFinance({ session, merchant, focusBindings, focusDiffere
         </ul> : <p>{zh ? "暂无 CSV 账单差异。到期未对平订单请核对上游账单是否已导入。" : "No open CSV discrepancies. For unreconciled orders, check whether the upstream statement has been imported."}</p>)}
       </section>
     }</LoadState>}
+    {productionOperations && <PeriodReport endpoint={platformAPI + "/period-report"} token={session.token} merchant={merchant} />}
     {productionOperations && <div ref={requestHeading} tabIndex={-1}>
       {pendingOnly && <button className="secondary" onClick={()=>setPendingOnly(false)}>{zh ? "查看全部结算申请" : "Show all settlement requests"}</button>}
       <SettlementRequests key={String(pendingOnly)} merchant={merchant || undefined} operator={operator} pending={pendingOnly} token={session.token} refresh={state.refresh} />
@@ -141,7 +142,6 @@ export function PlatformFinance({ session, merchant, focusBindings, focusDiffere
         </tr>)}</WorkspaceTable> : <p className="muted empty">{t("No settlement batches in this date range.")}</p>}
       </section>
     </>}</LoadState>
-    {!productionOperations && <SettlementRequests sandbox merchant={merchant} operator={operator} token={session.token} refresh={()=>{}}/>}
     {productionOperations && <DispatchControls operator={operator} token={session.token} openOrder={openOrder}/>}
     {productionOperations && (merchant ? <div className="merchant-overview" key={merchant}>
       <MerchantEvents merchant={merchant} token={session.token} write={operator} openOrder={openOrder}/>

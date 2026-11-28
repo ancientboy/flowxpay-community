@@ -75,14 +75,17 @@ export function MerchantRates({ token, siteRouting }: { token: string; siteRouti
   const { t, money } = locale;
   const quotes = useWorkspaceData<WorkspaceQuote[]>(base + "/channel-quotes", token);
   const sites = useWorkspaceData<Site[]>(siteRouting ? base + "/sites" : undefined, token);
-  return <section className="workspace-panel">
+  return <section className={"workspace-panel" + (siteRouting ? " merchant-rate-list site-rate-list" : " merchant-rate-list")}>
     <div className="heading panel-heading"><h2>{t("Your channel rates")}</h2></div>
     <LoadState state={quotes} label={t("Your channel rates")}>{items => items.length ?
       <WorkspaceTable label={t("Your channel rates")} columns={[
         ...(siteRouting ? [t("Site")] : []), t("Channel"), t("Direction"), t("Merchant rate"),
         ...(!siteRouting ? [t("Status"), t("Amount limits")] : []),
       ]}>
-        {items.map(item => <tr key={[item.account_id, item.direction, item.currency].join("/")}>
+        {items.map(item => {
+          const limits = item.min_amount_minor == null && item.max_amount_minor == null ? "—" :
+            [item.min_amount_minor, item.max_amount_minor].map(value => value == null ? "—" : money(value, item.currency)).join(" – ");
+          return <tr key={[item.account_id, item.direction, item.currency].join("/")}>
           {siteRouting && <td>{sites.data?.find(site => site.id === item.site_id)?.name ?? item.site_id}</td>}
           <td>{item.provider ? channelTitle({ id: item.channel_id ?? item.account_id, provider: item.provider, name: item.name }, t)
             : <>{t(item.name??"Channel")}<span className="resource-id account-id muted">{item.account_id}</span></>}</td>
@@ -91,10 +94,9 @@ export function MerchantRates({ token, siteRouting }: { token: string; siteRouti
             {t(priceLabels[item.quote.source])} · {t("Version")} {item.quote.version_id}
           </span>}</td>
           {!siteRouting && <><td>{t(!item.permitted ? "Trading disabled" : item.ready ? "Ready for orders" : "Waiting for dispatch")}</td>
-            <td>{item.min_amount_minor == null && item.max_amount_minor == null ? "—" :
-              (item.min_amount_minor == null ? "—" : money(item.min_amount_minor, item.currency)) + " – " +
-              (item.max_amount_minor == null ? "—" : money(item.max_amount_minor, item.currency))}</td></>}
-        </tr>)}
+            <td><span className="rate-limit-value">{limits}</span>
+              <details className="rate-limit-disclosure"><summary>{t("Amount limits")}</summary>{limits}</details></td></>}
+        </tr>;})}
       </WorkspaceTable> : <p className="muted empty">{t(siteRouting ? "No active channel rates are available." : "No assigned channels.")}</p>}</LoadState>
   </section>;
 }

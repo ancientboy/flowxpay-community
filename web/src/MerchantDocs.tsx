@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { DownloadSimple } from "@phosphor-icons/react";
 import { MerchantDocCode as Code } from "./MerchantDocCode";
 import { useLocale } from "./locale";
@@ -163,6 +163,12 @@ export function MerchantDocs() {
   const [language, setLanguage] = useState<SampleLanguage>("cURL");
   const endpoint = endpoints.find(item => item.id === selected);
   const docs = endpoint && detail(endpoint);
+  const signingBlock = useRef<HTMLDetailsElement>(null);
+  const referenceHeading = useRef<HTMLHeadingElement>(null);
+  function jumpToEndpoint(id: string) {
+    select(id);
+    requestAnimationFrame(() => referenceHeading.current?.focus());
+  }
   return <div className="merchant-docs">
     <section className="workspace-panel docs-intro">
       <div className="heading"><h2>{t("Merchant integration")}</h2>
@@ -171,7 +177,13 @@ export function MerchantDocs() {
         </button></div>
       </div>
       <p>{choose(coverage, zh)}</p><p className="muted">{choose(intro, zh)}</p><p className="muted">{choose(signing, zh)}</p>
-      <details className="docs-signing"><summary>{t("Sandbox request signing")}</summary><p className="muted">{choose(sandboxSignature, zh)}</p><Code source={signedRequestNode} /></details>
+      <nav className="guide-jumps" aria-label={zh ? "本页目录" : "On this page"}>
+        <button className="text-button" onClick={() => { if (signingBlock.current) { signingBlock.current.open = true; signingBlock.current.querySelector("summary")?.focus(); } }}>{zh ? "请求签名" : "Request signing"}</button>
+        <button className="text-button" onClick={() => jumpToEndpoint("create-payment")}>{zh ? "代收" : "Collections"}</button>
+        <button className="text-button" onClick={() => jumpToEndpoint("create-refund")}>{zh ? "退款" : "Refunds"}</button>
+        <button className="text-button" onClick={() => jumpToEndpoint("webhook")}>{zh ? "回调验签" : "Verify webhook"}</button>
+      </nav>
+      <details ref={signingBlock} className="docs-signing"><summary>{t("Sandbox request signing")}</summary><p className="muted">{choose(sandboxSignature, zh)}</p><Code source={signedRequestNode} /></details>
     </section>
     <section className="workspace-panel docs-reference">
       <div className="docs-select"><label htmlFor="docs-endpoint">{t("Endpoint")}</label>
@@ -181,7 +193,7 @@ export function MerchantDocs() {
         </select>
       </div>
       {endpoint && docs ? <article key={endpoint.id}>
-        <h2>{choose(endpoint.title, zh)}</h2>
+        <h2 ref={referenceHeading} tabIndex={-1}>{choose(endpoint.title, zh)}</h2>
         <div className="docs-path"><strong className="tag blue">{endpoint.method.toUpperCase()}</strong><code>/v1{endpoint.path}</code></div>
         <p>{choose(endpoint.note, zh)}</p>
         <h3>{t("Request parameters")}</h3><Parameters values={docs.parameters} zh={zh} />
@@ -203,7 +215,7 @@ export function MerchantDocs() {
             {failureSamples(status, endpoint).map(sample => <Code key={sample.error.code} source={json(sample)} />)}</details>;
         })}
       </article> : <article>
-        <h2>{t("Webhook verification")}</h2><p>{choose(webhookNote, zh)}</p>
+        <h2 ref={referenceHeading} tabIndex={-1}>{t("Webhook verification")}</h2><p>{choose(webhookNote, zh)}</p>
         <h3>{t("Request parameters")}</h3><Parameters values={webhook.parameters} zh={zh} />
         {webhookFields.map((schema, index) => <details key={index}><summary>{t(index === 0 ? "Payment and refund event fields" : "Payout event fields")}</summary>
           <Parameters values={bodyRows(schema)} zh={zh} /></details>)}

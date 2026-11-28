@@ -1,3 +1,4 @@
+import { HandlingNote, OrderTime, useOrderClock } from "./OrderContext";
 import { PlatformOrderSummary, matchesOrderStatus } from "./PlatformOrderSummary";
 import { PeriodReport } from "./PeriodReport";
 import { MerchantPaymentFunds } from "./MerchantPaymentFunds";
@@ -33,12 +34,13 @@ interface OverviewTotals {
   settled_net_minor: string | null;
 }
 
-export function WorkspaceOverview({ capabilities, token, openChannels, openPayments, openSettlement, openSite }: {
+export function WorkspaceOverview({ capabilities, token, openChannels, openPayments, openSettlement, openSite, openPendingPayouts }: {
   capabilities: WorkspaceCapabilities;
   token: string;
   openChannels: () => void;
   openPayments: () => void;
   openSettlement: (account?: string) => void;
+  openPendingPayouts?: () => void;
   openSite: (site: Site | SiteCard) => void;
 }) {
   const {t} = useLocale();
@@ -47,8 +49,13 @@ export function WorkspaceOverview({ capabilities, token, openChannels, openPayme
   const setup = useWorkspaceData<WorkspaceSetup>(base + "/setup", token);
   const availableCurrencies = setup.data?.collection_currencies ?? (capabilities.siteRouting ? currencies.filter(value => value !== "THB") : []);
   const selected = currency ?? setup.data?.recent_currency ?? setup.data?.open_currencies[0] ?? availableCurrencies[0];
+  const payouts = useWorkspaceData<{status:string}[]>(openPendingPayouts && capabilities.payoutWorkflow ? "/v1/payouts" : undefined, token);
+  const pending = payouts.data?.filter(row => row.status === "pending_confirmation").length;
   return <div className="merchant-overview">
-    {memberPortal && <PeriodReport endpoint={base + "/period-report"} token={token} />}
+    {Boolean(pending) && <section className="workspace-panel merchant-home-tasks">
+      <h2>{t("Pending confirmation")}</h2>
+      <button type="button" className="text-button" onClick={openPendingPayouts}>{t("Payout orders")} · {pending}</button>
+    </section>}
     {!memberPortal && capabilities.paymentDemos && <LoadState state={setup} label={t("Collection setup")}>{data => !data.recent_currency && <section className="workspace-panel overview-summary">
       <div className="heading panel-heading"><h2>{t("Get started with sandbox collections")}</h2></div>
       <div className="overview-footer">
@@ -80,6 +87,7 @@ export function WorkspaceOverview({ capabilities, token, openChannels, openPayme
         <button className="text-button panel-link" onClick={() => openSettlement()}>{t("View settlement")}<ArrowRight size={16} aria-hidden="true" /></button>
       </div>
     </section>
+    {memberPortal && <PeriodReport endpoint={base + "/period-report"} token={token} />}
     {capabilities.siteRouting && <section className="workspace-panel">
       <div className="heading panel-heading"><h2>{t("Merchant sites")}</h2></div>
       <SiteExplanation />
@@ -164,6 +172,7 @@ export function WorkspacePayments({ token, openPayments, initialOrder = "" }: { 
 
 function WorkspacePaymentRows({ token, recent, query, autoOpen, heading }: { token: string; recent: boolean; query: string; autoOpen: boolean; heading: React.ReactNode }) {
   const { t, money, dateTime, localizedLink } = useLocale();
+  const now = useOrderClock();
   const [selected, setSelected] = useState<Payment>();
   const [status, setStatus] = useState("");
   const params = new URLSearchParams(recent ? { recent: "1" } : { reference: query });
@@ -184,8 +193,8 @@ function WorkspacePaymentRows({ token, recent, query, autoOpen, heading }: { tok
         {rows.map(payment => <tr key={payment.id}>
           <td><button className="text-button" onClick={() => setSelected(payment)}>{payment.merchant_reference}</button></td>
           <td className="payment-amount">{money(payment.amount_minor, payment.currency)}</td>
-          <td><PaymentStatusBadge payment={payment} /></td>
-          <td>{dateTime(payment.created_at)}</td>
+          <td><PaymentStatusBadge payment={payment} /><HandlingNote record={payment} /></td>
+          <td><OrderTime at={payment.created_at} now={now} /></td>
         </tr>)}
       </WorkspaceTable> : <p className="muted empty">{t("No payments match your search.")}</p>;}}</LoadState>
     </section>

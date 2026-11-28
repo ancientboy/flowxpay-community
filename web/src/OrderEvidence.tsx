@@ -1,3 +1,4 @@
+import { HandlingNote } from "./OrderContext";
 import { ControlAction } from "./WorkspaceControls";
 import { OrderFollowUp, type FollowUp } from "./OrderFollowUp";
 import { Dialog } from "./Dialog";
@@ -122,6 +123,7 @@ export function OrderEvidence({ id, token, close, operator }: { id: string; toke
             <button className="secondary" type="button" onClick={() => noticeHeading.current?.focus()}>{noticeTitle}</button>
           </div>
           <Details fields={[
+            [l("处理记录", "Handling record"), <HandlingNote record={{checkout_needs_review: order.checkout_needs_review, cancelled_at: order.manual_cancellation?.cancelled_at, attempted_at: dispatch?.attempted_at, lookup_at: dispatch?.lookup_updated_at}} />],
             [l("平台单号", "Platform order ID"), order.order_id],
             [l("商户 / 商户单号", "Merchant / merchant reference"), order.merchant_id + " · " + order.merchant_reference],
             [l("方向 / 原通道", "Direction / original channel"), (order.direction === "payout" ? l("代付", "Payout") : l("代收", "Collection")) + " · " + order.channel_id],

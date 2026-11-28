@@ -1,3 +1,4 @@
+import { elapsedTime, HandlingNote, OrderTime, useOrderClock } from "./OrderContext";
 import { PlatformOrderSummary, matchesOrderStatus } from "./PlatformOrderSummary";
 import { useLocale } from "./locale";
 import { useRef, useState, type ReactNode } from "react";
@@ -36,22 +37,23 @@ interface Payout {
   reviewed_by?: string; reviewed_at?: string; channel_reference?: string; transfer_reference?: string; failure_code?: string;
 }
 
-type PayoutOrder = Pick<Payout, "id" | "merchant_reference" | "amount_minor" | "currency" | "quote" | "status">;
+type PayoutOrder = { created_at?: string; reviewed_by?: string; reviewed_at?: string } & Pick<Payout, "id" | "merchant_reference" | "amount_minor" | "currency" | "quote" | "status">;
 
 export function Payouts({ token, member, workflow, initialOrder = "", pendingOnly = false }: { token: string; member: MemberSession; workflow: boolean; initialOrder?: string; pendingOnly?: boolean }) {
-  return workflow ? <SandboxPayoutWorkflow token={token} member={member} /> : <RecordedPayouts token={token} initialOrder={initialOrder} pendingOnly={pendingOnly} />;
+  return workflow ? <SandboxPayoutWorkflow token={token} member={member} pendingOnly={pendingOnly} /> : <RecordedPayouts token={token} initialOrder={initialOrder} pendingOnly={pendingOnly} />;
 }
 
-function PayoutOrders({ state, sandbox, refresh, find, select, actions }: {
+function PayoutOrders({ state, sandbox, refresh, find, select, actions, initialStatus = "" }: {
   state: ReturnType<typeof useWorkspaceData<PayoutOrder[]>>;
-  sandbox?: boolean;
+  initialStatus?: string; sandbox?: boolean;
   refresh: () => void;
   find: (reference: string) => void;
   select: (id: string) => void;
   actions?: ReactNode;
 }) {
   const { t, money } = useLocale();
-  const [status, setStatus] = useState("");
+  const now = useOrderClock();
+  const [status, setStatus] = useState(initialStatus);
   return <>
     {state.data && !state.error && <PlatformOrderSummary rows={state.data} payout selected={status} onSelect={setStatus} isoScale={false} />}
     <section className="workspace-panel">
@@ -73,11 +75,12 @@ function PayoutOrders({ state, sandbox, refresh, find, select, actions }: {
     <LoadState state={state} label={t("payout orders")}>{orders => {
       const items = orders.filter(row => matchesOrderStatus(row, status, true));
       return items.length ?
-      <WorkspaceTable label={t("Payout orders")} columns={[t("Merchant reference"), t("Payout ID"), t("Amount"), t("Status")]}>
+      <WorkspaceTable label={t("Payout orders")} columns={[t("Merchant reference"), t("Payout ID"), t("Amount"), t("Status"), t("Created")]}>
         {items.map(item => <tr key={item.id}>
           <td><button className="text-button wrap" onClick={() => select(item.id)}>{item.merchant_reference}</button></td>
           <td className="resource-id order-number">{item.id}</td>
-          <td>{money(item.amount_minor, item.currency)}</td><td>{t(payoutStatuses[item.status] ?? item.status)}</td>
+          <td>{money(item.amount_minor, item.currency)}</td><td>{t(payoutStatuses[item.status] ?? item.status)}<HandlingNote record={item} /></td>
+          <td><OrderTime at={item.created_at} now={now} /></td>
         </tr>)}
       </WorkspaceTable> : <p className="muted empty">{t("No payouts found.")}</p>;}}</LoadState>
     </section>
@@ -132,6 +135,8 @@ function RecordedPayouts({ token, initialOrder, pendingOnly }: { token: string; 
           ? "平台正在核查。请刷新这笔订单的状态，避免重复发起代付。"
           : "FlowXPay is verifying this payout. Refresh this order before taking further action to avoid a duplicate payout."}</p>}
         <PayoutFacts item={item}>{[
+          [locale === "zh-CN" ? "处理记录" : "Handling record", <HandlingNote record={{attempted_at: item.attempted_at, lookup_at: item.lookup_updated_at}} />],
+          ...(elapsedTime(item.created_at, item.final_at, locale) ? [[locale === "zh-CN" ? "创建至最终确认" : "Creation to final confirmation", elapsedTime(item.created_at, item.final_at, locale)] as [string, ReactNode]] : []),
           [t("Product ID"), item.product_id],
           [t("Funds account"), item.fund_account_id ?? "—"],
           [locale === "zh-CN" ? "本笔剩余冻结" : "Remaining hold for this payout",
@@ -153,7 +158,7 @@ function RecordedPayouts({ token, initialOrder, pendingOnly }: { token: string; 
   </>;
 }
 
-function SandboxPayoutWorkflow({ token, member }: { token: string; member: MemberSession }) {
+function SandboxPayoutWorkflow({ token, member, pendingOnly }: { token: string; member: MemberSession; pendingOnly: boolean }) {
   const locale = useLocale();
   const { t, money } = locale;
   const [search, setSearch] = useState("");
@@ -177,7 +182,7 @@ function SandboxPayoutWorkflow({ token, member }: { token: string; member: Membe
   }
 
   return <>
-    <PayoutOrders sandbox state={payouts} refresh={refresh} select={setSelected}
+    <PayoutOrders sandbox initialStatus={pendingOnly ? "pending_confirmation" : ""} state={payouts} refresh={refresh} select={setSelected}
       find={reference => { setSearch(reference); payouts.reload(); }}
       actions={canDraft && <button className="primary" onClick={() => { setAccountID(""); setForm("draft"); }}>{t("New payout draft")}</button>} />
     <section className="workspace-panel">

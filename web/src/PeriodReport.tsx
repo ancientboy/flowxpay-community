@@ -60,6 +60,10 @@ export function PeriodReport({ endpoint, token, merchant }: { endpoint: string; 
         <button type="button" className={chosen === days ? "primary" : "secondary"} aria-pressed={chosen === days}
           key={days} onClick={() => preset(Number(days))}>{label}</button>)}
     </div>
+    <details className="period-advanced"><summary>{l("More filters", "更多筛选")}
+      {(!chosen || filters.group !== "day" || filters.channel || filters.currency) &&
+        <small> · {[!chosen && (filters.from + " – " + filters.to), filters.group !== "day" && (filters.group === "week" ? l("Weekly", "按周") : l("Monthly", "按月")), filters.channel, filters.currency].filter(Boolean).join(" · ")}</small>}
+    </summary>
     <form className="platform-finance-filters period-filters" onSubmit={formSubmit}>
       <label>{t("Start date")}<input type="date" value={dates.from} required
         onChange={event => setDates({ ...dates, from: event.target.value })} /></label>
@@ -76,6 +80,7 @@ export function PeriodReport({ endpoint, token, merchant }: { endpoint: string; 
         onChange={event => setCurrency(event.target.value.toUpperCase())} /></label>
       <button className="secondary">{l("Apply date range", "应用筛选")}</button>
     </form>
+    </details>
     <details className="period-basis muted small">
       <summary>{l("How this report is calculated", "统计口径")}</summary>
       <p>{l(

@@ -161,17 +161,19 @@ type platformVolume struct {
 }
 
 type platformPayment struct {
-	ID        string     `json:"id"`
-	Merchant  string     `json:"merchant"`
-	Reference string     `json:"reference"`
-	Currency  string     `json:"currency"`
-	Amount    int64      `json:"amount_minor"`
-	Status    string     `json:"status"`
-	CreatedAt time.Time  `json:"created_at"`
-	UpdatedAt *time.Time `json:"updated_at,omitempty"`
-	Market    string     `json:"market,omitempty"`
-	Method    string     `json:"method,omitempty"`
-	AccountID string     `json:"account_id,omitempty"`
+	ManualReview bool       `json:"manual_review,omitempty"`
+	DispatchedAt *time.Time `json:"dispatched_at,omitempty"`
+	ID           string     `json:"id"`
+	Merchant     string     `json:"merchant"`
+	Reference    string     `json:"reference"`
+	Currency     string     `json:"currency"`
+	Amount       int64      `json:"amount_minor"`
+	Status       string     `json:"status"`
+	CreatedAt    time.Time  `json:"created_at"`
+	UpdatedAt    *time.Time `json:"updated_at,omitempty"`
+	Market       string     `json:"market,omitempty"`
+	Method       string     `json:"method,omitempty"`
+	AccountID    string     `json:"account_id,omitempty"`
 }
 
 type platformChannel struct {
@@ -259,18 +261,18 @@ func (s *server) platformDashboard(w http.ResponseWriter, r *http.Request, _ [32
 	orderQuery := `
 		SELECT id,merchant_id,merchant_reference,currency,amount_minor,
 		  CASE WHEN status='requires_action' AND expires_at <= now() THEN 'expired' ELSE status END,created_at,
-		  NULL::timestamptz,market,method,coalesce(route_snapshot->>'account_id','')
+		  NULL::timestamptz,market,method,coalesce(route_snapshot->>'account_id',''),false,NULL::timestamptz
 		FROM payments WHERE ($1='' OR merchant_id=$1) AND ($2='' OR id=$2 OR merchant_reference=$2)
 		ORDER BY created_at DESC,id DESC LIMIT 50`
 	if direction == "payout" {
 		orderQuery = `
-			SELECT id,merchant_id,merchant_reference,currency,amount_minor,status,created_at,updated_at,'','',account_id
+			SELECT id,merchant_id,merchant_reference,currency,amount_minor,status,created_at,updated_at,'','',account_id,reviewed_at IS NOT NULL AND coalesce(reviewed_by,'')<>'',submitted_at
 			FROM sandbox_payouts WHERE ($1='' OR merchant_id=$1) AND ($2='' OR id=$2 OR merchant_reference=$2)
 			ORDER BY created_at DESC,id DESC LIMIT 50`
 	}
 	payments, err := readPlatformRows(ctx, tx, orderQuery, func(rows *sql.Rows, p *platformPayment) error {
 		return rows.Scan(&p.ID, &p.Merchant, &p.Reference, &p.Currency, &p.Amount, &p.Status, &p.CreatedAt,
-			&p.UpdatedAt, &p.Market, &p.Method, &p.AccountID)
+			&p.UpdatedAt, &p.Market, &p.Method, &p.AccountID, &p.ManualReview, &p.DispatchedAt)
 	}, merchant, reference)
 	if err != nil {
 		memberStorageError(w)

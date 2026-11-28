@@ -30,18 +30,20 @@ export function App() {
 
   useEffect(() => { document.title = title + " · FlowXPay"; }, [title]);
 
-  return <>
-    <header className="community-demo-bar">
-      <a href={url()} className="community-wordmark">FlowXPay</a>
-      <nav aria-label={zh ? "演示入口" : "Demo workspaces"}>
+  const demoLinks = <nav aria-label={zh ? "演示入口" : "Demo workspaces"}>
         <a href={operator} aria-current={view === "operator" ? "page" : undefined}>{t("Platform operations")}</a>
         <a href={merchant} aria-current={view === "merchant" ? "page" : undefined}>{t("Merchant workspace")}</a>
         <a href={simulation}>{zh ? "模拟支付" : "Payment simulation"}</a>
-      </nav>
+      </nav>;
+
+  return <>
+    <header className="community-demo-bar">
+      <a href={url()} className="community-wordmark">FlowXPay</a>
+      {demoLinks}
       <span>{zh ? "只读演示 · 示例数据" : "Read-only demo · sample data"}</span>
       {!view && <LanguageSelect />}
     </header>
-    {view === "operator" ? <PlatformConsole initialPage={params.get("page") === "payouts" ? "Payouts" : "Overview"} logo={brand()} session={{ token, role: "viewer", user: "Demo platform operator" }} signOut={home} />
+    {view === "operator" ? <PlatformConsole demoLinks={demoLinks} initialPage={params.get("page") === "payouts" ? "Payouts" : "Overview"} logo={brand()} session={{ token, role: "viewer", user: "Demo platform operator" }} signOut={home} />
       : view === "merchant" ? <MemberWorkspace logo={brand()} capabilities={capabilities} token={token} member={demoMember} signedOut={home} />
       : <main className="community-demo-home">
         <h1>{title}</h1>

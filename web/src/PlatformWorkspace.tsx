@@ -117,8 +117,8 @@ export function PlatformWorkspace({ logo }: { logo: ReactNode }) {
   </main>;
 }
 
-export function PlatformConsole({ logo, session, signOut, initialPage = "Overview" }: {
-  logo: ReactNode; session: PlatformSession; signOut: (notice?: string) => void; initialPage?: Page;
+export function PlatformConsole({ logo, session, signOut, demoLinks, initialPage = "Overview" }: {
+  logo: ReactNode; session: PlatformSession; signOut: (notice?: string) => void; initialPage?: Page; demoLinks?: ReactNode;
 }) {
   const { t, locale, setLocale } = useLocale();
   const [orderTarget, setOrderTarget] = useState<OrderTarget>();
@@ -126,7 +126,7 @@ export function PlatformConsole({ logo, session, signOut, initialPage = "Overvie
   const [focusBindings, setFocusBindings] = useState(false);
   const [page, setPage] = useState<Page>(initialPage);
   const [darkPayouts, setDarkPayouts] = useState(() => {
-    try { return localStorage.getItem(payoutThemeKey) === "dark"; }
+    try { return (localStorage.getItem(payoutThemeKey) ?? new URLSearchParams(location.search).get("theme")) === "dark"; }
     catch { return false; }
   });
 
@@ -182,11 +182,11 @@ export function PlatformConsole({ logo, session, signOut, initialPage = "Overvie
     </button>;
   }
 
-  return <div className="app-shell member-shell" data-payout-theme={page === "Payouts" && darkPayouts ? "dark" : undefined}>
+  return <div className="app-shell member-shell" data-payout-theme={page === "Payouts" ? (darkPayouts ? "dark" : "light") : undefined}>
     {logo}
     <header className="topbar">
-      <div className="identity"><span className="muted small">{t("Platform operations")}</span><strong className="wrap">{session.user}</strong></div>
-      <span className="tag blue">{t(platformEnvironment)}</span>
+      {page === "Payouts" && demoLinks ? demoLinks : <div className="identity"><span className="muted small">{t("Platform operations")}</span><strong className="wrap">{session.user}</strong></div>}
+      <span className="tag blue">{page === "Payouts" && demoLinks ? (locale === "zh-CN" ? "只读演示" : "Read-only demo") : t(platformEnvironment)}</span>
       <button className="secondary disconnect" onClick={() => void logout()} disabled={signingOut} aria-label={t("Sign out")}>
         <ArrowLeft size={16} /><span>{t("Sign out")}</span>
       </button>
@@ -396,9 +396,10 @@ function PlatformReports({ session, merchant, page, selectMerchant, configure, t
   </div>}</LoadState>
     {order && <Dialog drawer={page !== "Payouts"} className={page === "Payouts" ? "payout-receipt" : undefined} title={t(page === "Payouts" ? "Payout details" : "Payment details")} close={() => setOrder(undefined)}>
       {page === "Payouts" && <div className="payout-receipt-total">
-        <div><span>{t("Amount")}</span><strong>{orderAmount(order)}</strong></div>
+        <div><span>{state.data?.merchants.find(merchant => merchant.id === order.merchant)?.name ?? order.merchant}</span><strong>{orderAmount(order)}</strong></div>
         <PaymentStatusBadge payment={order} payout />
       </div>}
+      {page === "Payouts" && order.updated_at && <p className="payout-receipt-updated">{t("Updated")} · {dateTime(order.updated_at)}</p>}
       <Details fields={[
         [t("Merchant ID"), order.merchant], [t("Platform reference"), order.id], [t("Merchant reference"), order.reference],
         ...(page === "Payouts" ? [] : [
@@ -406,7 +407,7 @@ function PlatformReports({ session, merchant, page, selectMerchant, configure, t
         ] as [string, ReactNode][]),
         [t("Applicability"), [order.market, order.currency, t(order.method ?? "")].filter(Boolean).join(" · ")],
         [t(order.account_id ? "Account ID" : "Channel ID"), order.channel_id ?? order.account_id ?? "—"], [t("Created"), dateTime(order.created_at)],
-        [t("Updated"), order.updated_at ? dateTime(order.updated_at) : "—"],
+        ...(page === "Payouts" && order.updated_at ? [] : [[t("Updated"), order.updated_at ? dateTime(order.updated_at) : "—"] as [string, string]]),
       ]} />
       {order.checkout_needs_review && <p className="panel-note">{t("The payment code has expired. We are checking the original order.")}</p>}
       {productionOperations && <button className="secondary" type="button" onClick={() => { setEvidenceOrder(order.id); setOrder(undefined); }}>

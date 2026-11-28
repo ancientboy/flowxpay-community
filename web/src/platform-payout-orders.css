@@ -115,9 +115,9 @@
 .topbar .payout-filter-field { width: 7.5rem; }
 
 [data-payout-theme] {
-  --canvas: #f6f5f1; --surface: #fffefa; --raised: #f0efea; --navy: #272621;
-  --action: #5c4b93; --active: #eae5f4; --teal: #7866a7; --muted: #686662;
-  --border: #dcd9d2; --control-border: #c9c6bf; --badge-ink: #4f4470;
+  --canvas: #fff; --surface: #fff; --raised: #f4f5f6; --navy: #24262a;
+  --action: #5c4b93; --active: #eae5f4; --teal: #7866a7; --muted: #62666c;
+  --border: #e1e3e6; --control-border: #cbd0d5; --badge-ink: #4f4470;
   background: var(--canvas); color: var(--navy);
 }
 [data-payout-theme="dark"] {

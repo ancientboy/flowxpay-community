@@ -3,7 +3,7 @@ import { PlatformPayoutOrders, initialPayoutFilters } from "./PlatformPayoutOrde
 import { PlatformCollectionOrders } from "./PlatformCollectionOrders";
 import { OrderEvidence } from "./OrderEvidence";
 import { useEffect, useLayoutEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
-import { ArrowLeft, Buildings, CreditCard, GearSix, House, Moon, Plugs, Stack, ChartLineUp, Users } from "@phosphor-icons/react";
+import { ArrowLeft, Buildings, CreditCard, GearSix, House, Moon, Plugs, SidebarSimple, Stack, ChartLineUp, Users } from "@phosphor-icons/react";
 import { ApiError, request } from "./api";
 import type { Provider } from "./ChannelIdentity";
 import { PaymentStatusBadge } from "./CollectionEvents";
@@ -23,6 +23,7 @@ import { PlatformTeam } from "./PlatformTeam";
 import { platformAPI as api, platformEnvironment, productionOperations } from "./platformEnvironment";
 import { ProductionPlatformAccess } from "./ProductionPlatformAccess";
 
+const sidebarKey = "flowxpay.platform.sidebar.collapsed";
 const payoutThemeKey = "flowxpay.platform.payouts.theme";
 
 const navigation = [
@@ -126,15 +127,35 @@ export function PlatformConsole({ logo, session, signOut, demoLinks, initialPage
   const [focusBindings, setFocusBindings] = useState(false);
   const [page, setPage] = useState<Page>(initialPage);
   const [darkPayouts, setDarkPayouts] = useState(() => {
-    try { return (localStorage.getItem(payoutThemeKey) ?? new URLSearchParams(location.search).get("theme")) === "dark"; }
+    const theme = new URLSearchParams(location.search).get("theme");
+    if (theme === "light" || theme === "dark") return theme === "dark";
+    try { return localStorage.getItem(payoutThemeKey) === "dark"; }
     catch { return false; }
   });
 
   function togglePayoutTheme() {
     const next = !darkPayouts;
     setDarkPayouts(next);
+    const url = new URL(location.href);
+    if (url.searchParams.has("theme")) {
+      url.searchParams.delete("theme");
+      history.replaceState(history.state, "", url);
+    }
     try { localStorage.setItem(payoutThemeKey, next ? "dark" : "light"); }
     catch { /* The selection still applies when browser storage is unavailable. */ }
+  }
+
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
+    try { return localStorage.getItem(sidebarKey) === "true"; }
+    catch { return false; }
+  });
+  const sidebarLabel = sidebarCollapsed ? t("Expand navigation") : t("Collapse navigation");
+
+  function toggleSidebar() {
+    const next = !sidebarCollapsed;
+    setSidebarCollapsed(next);
+    try { localStorage.setItem(sidebarKey, String(next)); }
+    catch { /* Keep the current selection in this session. */ }
   }
 
   const [merchant, setMerchant] = useState("");
@@ -182,8 +203,14 @@ export function PlatformConsole({ logo, session, signOut, demoLinks, initialPage
     </button>;
   }
 
-  return <div className="app-shell member-shell" data-payout-theme={page === "Payouts" ? (darkPayouts ? "dark" : "light") : undefined}>
-    {logo}
+  return <div className="app-shell member-shell platform-shell" data-sidebar-collapsed={sidebarCollapsed} data-payout-theme={page === "Payouts" ? (darkPayouts ? "dark" : "light") : undefined}>
+    <div className="platform-brand">
+      {logo}
+      <button type="button" className="sidebar-toggle" title={sidebarLabel} aria-label={sidebarLabel}
+        aria-controls="platform-navigation" aria-expanded={!sidebarCollapsed} onClick={toggleSidebar}>
+        <SidebarSimple size={20} aria-hidden="true" />
+      </button>
+    </div>
     <header className="topbar">
       {page === "Payouts" && demoLinks ? demoLinks : <div className="identity"><span className="muted small">{t("Platform operations")}</span><strong className="wrap">{session.user}</strong></div>}
       <span className="tag blue">{page === "Payouts" && demoLinks ? (locale === "zh-CN" ? "只读演示" : "Read-only demo") : t(platformEnvironment)}</span>
@@ -194,7 +221,7 @@ export function PlatformConsole({ logo, session, signOut, demoLinks, initialPage
         options={Object.entries(languages).map(([value, label]) => ({ value, label }))}
         value={locale} onChange={value => setLocale(resolveLocale(value))} /> : <LanguageSelect />}
     </header>
-    <nav className="nav" aria-label={t("Platform operations")}>
+    <nav id="platform-navigation" className="nav" hidden={sidebarCollapsed} aria-label={t("Platform operations")}>
       {productionOperations ? <>
         {navButton("Overview")}
         {operationsNav.map(group=><div className="nav-group" key={group.en}>

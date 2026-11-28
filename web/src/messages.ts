@@ -775,6 +775,8 @@ export const messages: Record<string, string> = {
   "payout details": "代付详情",
   "Payout ID": "代付 ID",
   "All payouts": "全部代付",
+  "Expand navigation": "展开导航",
+  "Collapse navigation": "收起导航",
   "Payout orders": "代付订单",
   "payout orders": "代付订单",
   "Payouts": "代付",

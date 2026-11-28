@@ -2,7 +2,7 @@ import { PlatformPayoutOrders, initialPayoutFilters } from "./PlatformPayoutOrde
 import { PlatformCollectionOrders } from "./PlatformCollectionOrders";
 import { OrderEvidence } from "./OrderEvidence";
 import { useEffect, useLayoutEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
-import { ArrowLeft, Buildings, CreditCard, GearSix, House, Plugs, Stack, ChartLineUp, Users } from "@phosphor-icons/react";
+import { ArrowLeft, Buildings, CreditCard, GearSix, House, Moon, Plugs, Stack, ChartLineUp, Users } from "@phosphor-icons/react";
 import { ApiError, request } from "./api";
 import type { Provider } from "./ChannelIdentity";
 import { PaymentStatusBadge } from "./CollectionEvents";
@@ -21,6 +21,8 @@ import { PlatformTeam } from "./PlatformTeam";
 
 import { platformAPI as api, platformEnvironment, productionOperations } from "./platformEnvironment";
 import { ProductionPlatformAccess } from "./ProductionPlatformAccess";
+
+const payoutThemeKey = "flowxpay.platform.payouts.theme";
 
 const navigation = [
   ["Overview", House], ["Upstream channels", Stack], ["Merchants", Buildings], ["Payments", CreditCard], ["Payouts", CreditCard], ["Platform finance", ChartLineUp], ["Channel accounts", Plugs], ["Operations", GearSix], ["Platform team", Users],
@@ -122,6 +124,18 @@ export function PlatformConsole({ logo, session, signOut, initialPage = "Overvie
   const [focusDifferences, setFocusDifferences] = useState(false);
   const [focusBindings, setFocusBindings] = useState(false);
   const [page, setPage] = useState<Page>(initialPage);
+  const [darkPayouts, setDarkPayouts] = useState(() => {
+    try { return localStorage.getItem(payoutThemeKey) === "dark"; }
+    catch { return false; }
+  });
+
+  function togglePayoutTheme() {
+    const next = !darkPayouts;
+    setDarkPayouts(next);
+    try { localStorage.setItem(payoutThemeKey, next ? "dark" : "light"); }
+    catch { /* The selection still applies when browser storage is unavailable. */ }
+  }
+
   const [merchant, setMerchant] = useState("");
   const [target, setTarget] = useState<SiteTarget>();
   const [signingOut, setSigningOut] = useState(false);
@@ -167,7 +181,7 @@ export function PlatformConsole({ logo, session, signOut, initialPage = "Overvie
     </button>;
   }
 
-  return <div className="app-shell member-shell">
+  return <div className="app-shell member-shell" data-payout-theme={page === "Payouts" && darkPayouts ? "dark" : undefined}>
     {logo}
     <header className="topbar">
       <div className="identity"><span className="muted small">{t("Platform operations")}</span><strong className="wrap">{session.user}</strong></div>
@@ -189,7 +203,14 @@ export function PlatformConsole({ logo, session, signOut, initialPage = "Overvie
     </nav>
     <main className="workspace">
       {logoutError && <p className="error" role="alert">{t("The platform session could not be closed.")}</p>}
-      <div className="heading page-heading"><h1 ref={heading} tabIndex={-1}>{t(page === "Payouts" ? "Payout orders" : productionOperations && page === "Channel accounts" ? "Merchant channel assignments" : page)}</h1></div>
+      <div className="heading page-heading">
+        <h1 ref={heading} tabIndex={-1}>{t(page === "Payouts" ? "Payout orders" : productionOperations && page === "Channel accounts" ? "Merchant channel assignments" : page)}</h1>
+        {page === "Payouts" && <button type="button" role="switch" aria-checked={darkPayouts}
+          className="secondary payout-theme-switch" onClick={togglePayoutTheme}>
+          <Moon size={17} aria-hidden="true" />{locale === "zh-CN" ? "深色模式" : "Dark mode"}
+          <span className="payout-theme-track" aria-hidden="true" />
+        </button>}
+      </div>
       {page === "Platform team" && session.platformOwner
         ? <PlatformTeam token={session.token} />
         : page === "Merchants"
